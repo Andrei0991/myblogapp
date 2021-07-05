@@ -1,0 +1,21 @@
+{% extends 'layout.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<h2>Home Page</h2>
+<p class="intro">Welcome, {{ username }} !</p>
+<div class="containers">
+    <p>Would you like to make a POST ?</p>
+    <br>
+    <form action="/home" method="post">
+        <input type="hidden" name="user_id" value="{{ user_id }}">
+        <label for="title">Title</label>
+        <p><input class="form-control" type="text" name="title"></p><br>
+        <label for="content">Content</label>
+        <textarea class="form-control" aria-label="With textarea"></textarea><br>
+        <input type="submit" class="btn btn-primary btn-sm" value="Make a new post">
+    </form>
+</div>
+{% endblock %}
+

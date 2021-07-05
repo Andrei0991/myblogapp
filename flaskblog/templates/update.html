@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block title %}Update Post{% endblock %}
+{% block content %}
+    <h2>Update Post</h2><br>
+    <div class="container">
+        <form method="POST" action="/update/{{ post.id }}">
+            <dl>
+            <label class="labels">Update the title <i class="fas fa-hand-point-down"></i></label>
+            <p><input name="title" type="text" value = "{{ post.title }}" required></p>
+            <label class="labels">Update the content <i class="fas fa-hand-point-down"></i></label>
+            <p><input name="content" type="text" value = "{{ post.content }}" required></p>
+            </dl>
+            <p>
+            <input type="submit" class="btn btn-primary btn-sm" value="Press to UPDATE">
+            </p>
+        </form>
+    </div>    
+{% endblock %}
