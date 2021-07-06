@@ -2,7 +2,6 @@ from flask import Flask
 from flask_mysqldb import MySQL
 from flask_bcrypt import Bcrypt
 
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'f1743f5bb049f24e69ffeee14dfc8e6f'
 app.config['MYSQL_HOST'] = 'localhost'
