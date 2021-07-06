@@ -12,4 +12,10 @@ app.config['MYSQL_DB'] = 'users_db'
 db = MySQL(app)
 bcrypt = Bcrypt(app)
 
-from flaskblog import routes
+from flaskblog.users.routes import users
+from flaskblog.posts.routes import postings
+from flaskblog.main.routes import main
+
+app.register_blueprint(users)
+app.register_blueprint(postings)
+app.register_blueprint(main)

@@ -11,10 +11,10 @@
 		<nav class="navtop">
 			<div>
 				<h1>Blogs</h1>
-                <a href="{{ url_for('posts') }}"><i class="fas fa-file"></i>Posts</a>
-                <a href="{{ url_for('home') }}"><i class="fas fa-home"></i>Home</a>
-				<a href="{{ url_for('profile') }}"><i class="fas fa-user-circle"></i>Profile</a>
-				<a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i>Logout</a>
+                <a href="{{ url_for('postings.posts') }}"><i class="fas fa-file"></i>Posts</a>
+                <a href="{{ url_for('main.home') }}"><i class="fas fa-home"></i>Home</a>
+				<a href="{{ url_for('users.profile') }}"><i class="fas fa-user-circle"></i>Profile</a>
+				<a href="{{ url_for('users.logout') }}"><i class="fas fa-sign-out-alt"></i>Logout</a>
 			</div>
 		</nav>
 		<div class="content">
