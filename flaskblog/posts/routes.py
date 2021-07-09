@@ -10,9 +10,9 @@ postings = Blueprint('postings', __name__)
 def posts():
 	if 'loggedin' in session:
 		cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
-		cur.execute(f"SELECT * FROM posts LEFT JOIN users ON users.id = posts.user_id WHERE user_id = {session['id']} ORDER BY posts.date_posted DESC")
+		cur.execute(f"SELECT * FROM posts LEFT JOIN users ON users.id = posts.user_id ORDER BY posts.date_posted DESC")
 		post_details = cur.fetchall()
-	return render_template('posts.html', post_details=post_details)
+	return render_template('posts.html', post_details=post_details, username=session['username'])
 
 @postings.route('/delete/<id_post>', methods=['GET', 'POST'])
 def delete(id_post):

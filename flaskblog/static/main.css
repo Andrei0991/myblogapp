@@ -256,4 +256,7 @@ body.loggedin {
 	margin: 0 0 10px 0;
 }
 
+.comments {
+	font-weight: bold;
+}
 
