@@ -21,7 +21,7 @@ def login():
 		if account:
 			if bcrypt.check_password_hash(account['password'], password):
 				session['loggedin'] = True
-				session['id'] = account['id']
+				session['id'] = account['idUser']
 				session['username'] = account['username']
 				return redirect(url_for('main.home'))
 			else:
@@ -74,7 +74,7 @@ def register():
 def profile():
 	if 'loggedin' in session:
 		cursor = db.connection.cursor(MySQLdb.cursors.DictCursor)
-		cursor.execute('SELECT * FROM users WHERE id = %s', (session['id'],))
+		cursor.execute('SELECT * FROM users WHERE idUser = %s', (session['id'],))
 		account = cursor.fetchone()
 		cursor.close()
 		return render_template('profile.html', account=account)

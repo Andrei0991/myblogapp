@@ -3,7 +3,7 @@
 {% block content %}
     <h2>Update Post</h2><br>
     <div class="container">
-        <form method="POST" action="/update/{{ post.id }}">
+        <form method="POST" action="/update/{{ post.idPost }}">
             <dl>
             <label class="labels">Update the title <i class="fas fa-hand-point-down"></i></label>
             <p><input name="title" type="text" value = "{{ post.title }}" required></p>
