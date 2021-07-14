@@ -10,7 +10,7 @@ postings = Blueprint('postings', __name__)
 def posts():
 	if 'loggedin' in session:
 		cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
-		cur.execute(f"SELECT * FROM posts LEFT JOIN users ON users.idUser = posts.idUser WHERE statusPost = 1 AND statusUser = 1 ORDER BY posts.datePosted DESC")
+		cur.execute(f"SELECT * FROM posts LEFT JOIN users ON users.idUser = posts.idUser LEFT JOIN comments ON posts.idPost = comments.idPost WHERE statusPost = 1 AND statusUser = 1 ORDER BY posts.datePosted DESC")
 		post_details = cur.fetchall()
 	return render_template('posts.html', post_details = post_details, username = session['username'])
 
@@ -40,16 +40,16 @@ def update(id_post):
 def comments(id_post):
 	if request.method == "POST":
 		idPost = request.form['idPost']
-		content = request.form['comments']
-		cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
-		cur.execute("INSERT INTO comments (idPost, context) VALUES ('{0}', '{1}')".format(idPost, content, id_post))
+		context = request.form['context']
+		cursor = db.connection.cursor(MySQLdb.cursors.DictCursor)
+		cursor.execute("INSERT INTO comments (idPost, context) VALUES ('{0}', '{1}')".format(idPost, context, id_post))
 		db.connection.commit()
-		cur.close()
+		cursor.close()
 		return redirect(url_for('postings.posts'))
-	cursor = db.cursor(MySQLdb.cursors.DictCursor)
-	cursor.execute("SELECT * FROM comments WHERE idPost = %s", (id_post,))
-	comment = cursor.fetchone()
-	return render_template(url_for('postings.posts'), comment = comment)
+	cursor = db.connection.cursor(MySQLdb.cursors.DictCursor)
+	cursor.execute("SELECT * FROM comments WHERE idPost = {id_post} AND statusComment = 1")
+	post = cursor.fetchone()
+	return render_template('posts.html', post = post)
 
 
 
