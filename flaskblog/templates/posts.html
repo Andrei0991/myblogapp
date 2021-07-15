@@ -1,4 +1,5 @@
-{% extends 'layout.html' %} {% block title %}Posts{% endblock %} 
+{% extends 'layout.html' %} 
+{% block title %}Posts{% endblock %} 
 
 {% block content %}
 <h2>Posts Page</h2>
@@ -27,11 +28,21 @@
 			<article class="media content-section">
 				<div class="media-body">
 					<div class="article-metadata">
-						<small class="text-muted">{{ post['context'] or "" }}</small>
+						{% for comment in commentsAdded[post['idPost']] %}
+							{{ comment['context'] or "" }}&nbsp;
+							<br>
+							<b>Comment by:</b>&nbsp;&nbsp;<a class="mr-2" href="#">{{ comment['username'] }}</a>
+							on &nbsp;<small class="text-muted">{{ comment['dateComment'].strftime('%Y-%m-%d') }}</small>&nbsp;
+							&nbsp;
+							<a href="/deleteComments/{{ comment['idComment'] }}"><button type="submit" class="btn btn-danger btn-sm">Delete Comment</button></a>
+							<br>
+							<br>
+						{% endfor %}
 					</div>
 				</div>
 			</article>
-			<a href="#myModal/posts/{{ post.idPost }}/comments" class="btn btn-sm btn-primary" data-toggle="modal">Post a comment</a>
+			<br>
+			<a href="#myModal/posts/{{ post.idPost }}/comments" class="btn btn-sm btn-primary" data-toggle="modal">Add a comment</a>
 			<div id="myModal/posts/{{ post.idPost }}/comments" class="modal fade">
 				<div class="modal-dialog">
 					<div class="modal-content">
