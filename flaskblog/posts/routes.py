@@ -25,15 +25,16 @@ def posts():
 
 @postings.route('/delete/<id_post>', methods=['GET', 'POST'])
 def delete(id_post):
-	cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
-	cur.execute(f'DELETE FROM posts WHERE idPost = {id_post} AND statusPost = 1')
-	db.connection.commit()
+	if session['id'] == True:
+		cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+		cur.execute(f'DELETE FROM posts WHERE idPost = {id_post} AND statusPost = 1')
+		db.connection.commit()
 	return redirect (url_for('postings.posts'))
 
 
 @postings.route('/update/<id_post>', methods=['GET', 'POST'])
 def update(id_post):
-	if request.method == "POST" and 'loggedin' in session:
+	if request.method == "POST" and session['id'] == True:
 		title = request.form['title']
 		content = request.form['content']
 		cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -61,15 +62,16 @@ def comments(id_post):
 
 @postings.route('/deleteComments/<id_post>', methods=['GET', 'POST'])
 def deleteComments(id_post):
-	cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
-	cur.execute(f'DELETE FROM comments WHERE idComment = {id_post} AND statusComment = 1')
-	db.connection.commit()
+	if session['id'] == True:
+		cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+		cur.execute(f'DELETE FROM comments WHERE idComment = {id_post} AND statusComment = 1')
+		db.connection.commit()
 	return redirect (url_for('postings.posts'))
 
 
 @postings.route('/edit/<id_comment>', methods = ['GET', 'POST'])
 def edit(id_comment):
-	if request.method == "POST":
+	if request.method == "POST" and session['id'] == True:
 		context = request.form['context']
 		cursor = db.connection.cursor(MySQLdb.cursors.DictCursor)
 		cursor.execute(f'UPDATE comments SET context = %s WHERE idComment = %s AND statusComment = 1', (context, id_comment))

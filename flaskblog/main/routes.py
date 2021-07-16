@@ -5,6 +5,7 @@ import MySQLdb.cursors
 
 main = Blueprint('main', __name__)
 
+@main.route('/')
 @main.route('/home', methods=['GET', 'POST'])
 def home():
 	if request.method == 'POST':

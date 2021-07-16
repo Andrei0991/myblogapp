@@ -77,5 +77,5 @@ def profile():
 		cursor.execute('SELECT * FROM users WHERE idUser = %s', (session['id'],))
 		account = cursor.fetchone()
 		cursor.close()
-		return render_template('profile.html', account=account)
+		return render_template('profile.html', account = account)
 	return redirect(url_for('users.login'))
