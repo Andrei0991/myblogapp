@@ -19,7 +19,8 @@ def posts():
 			commentsAdded[post['idPost']] = []
 		for comment in comments:
 			commentsAdded[comment['idPost']].append(comment)
-	return render_template('posts.html', post_details = post_details, username = session['username'], commentsAdded = commentsAdded)
+		return render_template('posts.html', post_details = post_details, username = session['username'], commentsAdded = commentsAdded)
+	return redirect (url_for('users.login'))
 
 
 @postings.route('/delete/<id_post>', methods=['GET', 'POST'])
@@ -66,5 +67,16 @@ def deleteComments(id_post):
 	return redirect (url_for('postings.posts'))
 
 
-
+@postings.route('/edit/<id_comment>', methods = ['GET', 'POST'])
+def edit(id_comment):
+	if request.method == "POST":
+		context = request.form['context']
+		cursor = db.connection.cursor(MySQLdb.cursors.DictCursor)
+		cursor.execute(f'UPDATE comments SET context = %s WHERE idComment = %s AND statusComment = 1', (context, id_comment))
+		db.connection.commit()
+		return redirect(url_for('postings.posts'))
+	cursor = db.connection.cursor(MySQLdb.cursors.DictCursor)
+	cursor.execute(f'SELECT * FROM comments WHERE idComment = %s', (id_comment,))
+	edit = cursor.fetchone()
+	return render_template('edit_comment.html', edit = edit)
 
