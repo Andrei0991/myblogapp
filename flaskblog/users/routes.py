@@ -1,6 +1,6 @@
 from flask import render_template, url_for, redirect, request, session, Blueprint
 from flaskblog import db, bcrypt
-import MySQLdb.cursors
+# import MySQLdb.cursors
 import re
 
 users = Blueprint('users', __name__)
@@ -14,10 +14,10 @@ def login():
 	if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
 		username = request.form['username']
 		password = request.form['password']
-		cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
-		cur.execute("SELECT * FROM users WHERE username = '{0}'".format(username))
-		account = cur.fetchone()
-		cur.close()
+		# cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
+		account = db.select("SELECT * FROM users WHERE username = '{0}'".format(username))
+		# account = cur.fetchone()
+		# cur.close()
 		if account:
 			if bcrypt.check_password_hash(account['password'], password):
 				session['loggedin'] = True
@@ -48,9 +48,9 @@ def register():
 		username = request.form['username']
 		email = request.form['email']
 		password = bcrypt.generate_password_hash(request.form['password']).decode('utf-8')
-		cursor = db.connection.cursor(MySQLdb.cursors.DictCursor)
-		cursor.execute('SELECT * FROM users WHERE username = %s', (username,))
-		account = cursor.fetchone()
+		# cursor = db.connection.cursor(MySQLdb.cursors.DictCursor)
+		account = db.select("SELECT * FROM users WHERE username = '{0}'".format(username))
+		# account = cursor.fetchone()
 		if account:
 			msg = 'Account already exists!'
 		elif not re.match(r'[^@]+@[^@]+\.[^@]+', email):
@@ -60,10 +60,10 @@ def register():
 		elif not username or not password or not email:
 			msg = 'Please fill out the form!'
 		else:
-			cursor.execute("INSERT INTO users (username,email,password) VALUES ('{0}', '{1}', '{2}')".format(username, email, password))
-			db.connection.commit()
+			db.insert("INSERT INTO users (username,email,password) VALUES ('{0}', '{1}', '{2}')".format(username, email, password))
+			# db.connection.commit()
 			msg = 'You have successfully registered!'
-			cursor.close()
+			# cursor.close()
 			return redirect(url_for('users.login'))
 	elif request.method == 'POST':
 		msg = 'Please fill out the form!'
@@ -73,9 +73,9 @@ def register():
 @users.route('/profile')
 def profile():
 	if 'loggedin' in session:
-		cursor = db.connection.cursor(MySQLdb.cursors.DictCursor)
-		cursor.execute('SELECT * FROM users WHERE idUser = %s', (session['id'],))
-		account = cursor.fetchone()
-		cursor.close()
+		# cursor = db.connection.cursor(MySQLdb.cursors.DictCursor)
+		account = db.select("SELECT * FROM users WHERE idUser = '{0}'".format(session['id']))
+		# account = cursor.fetchone()
+		# cursor.close()
 		return render_template('profile.html', account = account)
 	return redirect(url_for('users.login'))

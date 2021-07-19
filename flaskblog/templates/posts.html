@@ -36,8 +36,9 @@
 							on &nbsp;<small class="text-muted">{{ comment['dateComment'].strftime('%Y-%m-%d') }}</small>&nbsp;
 							&nbsp;
 							<br>
-							<a href="/deleteComments/{{ comment['idComment'] }}"><button type="submit" class="btn btn-danger btn-sm">Delete Comment</button></a>
+							<br>
 							<a href="/edit/{{ comment['idComment'] }}"><button type="submit" class="btn btn-primary btn-sm">Edit Comment</button></a>
+							<a href="/deleteComments/{{ comment['idComment'] }}"><button type="submit" class="btn btn-danger btn-sm">Delete Comment</button></a>
 							<br>
 							<br>
 						{% endfor %}
