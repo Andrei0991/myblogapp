@@ -28,6 +28,7 @@ def posts(page):
 								  """.format(limit, offset), False )
 		for post in post_details:
 			post_IDS.append(post['idPost'])
+		
 		comments = db.select( """
 									SELECT * 
 									FROM comments 
@@ -36,6 +37,7 @@ def posts(page):
 									AND statusComment = 1 AND idPost IN {0}
 									ORDER BY comments.dateComment ASC
 								  """.format(tuple(post_IDS)), False )
+		
 		commentsAdded = {}
 		db.query("""SET session sql_mode='NO_ENGINE_SUBSTITUTION'""")
 		if post_details:
