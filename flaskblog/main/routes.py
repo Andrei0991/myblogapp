@@ -1,6 +1,5 @@
 from flask import render_template, url_for, redirect, request, session, Blueprint
 from flaskblog import db
-# import MySQLdb.cursors
 
 
 main = Blueprint('main', __name__)

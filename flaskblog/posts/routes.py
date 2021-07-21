@@ -1,6 +1,5 @@
 from flask import render_template, url_for, redirect, request, session, Blueprint, abort
 from flaskblog import db
-# import MySQLdb.cursors
 import re, math
 
 postings = Blueprint('postings', __name__)
@@ -14,11 +13,9 @@ def posts(page):
 		offset = page*limit - limit
 		next = page+1
 		prev = page-1
-		total_row = db.query
-		total_page = limit
 		post_IDS = []
 
-		count = db.select("""SELECT count(*) AS count FROM posts""")
+		count = db.select(""" SELECT count(*) AS count FROM posts """)
 		count = count['count']
 		pages = math.ceil(count / limit)
 		post_details = db.select( """
@@ -47,7 +44,7 @@ def posts(page):
 			if comments:
 				for comment in comments:
 					commentsAdded[comment['idPost']].append(comment)
-		return render_template('posts.html', post_details = post_details, username = session['username'], commentsAdded = commentsAdded, next = next, prev = prev, page = total_page, pages = pages)
+		return render_template('posts.html', post_details = post_details, username = session['username'], commentsAdded = commentsAdded, next = next, prev = prev, pages = pages)
 	return redirect (url_for('users.login'))
 
 

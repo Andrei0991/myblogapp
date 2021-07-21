@@ -1,6 +1,5 @@
 from flask import render_template, url_for, redirect, request, session, Blueprint
 from flaskblog import db, bcrypt
-# import MySQLdb.cursors
 import re
 
 users = Blueprint('users', __name__)
