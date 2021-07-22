@@ -9,6 +9,7 @@ postings = Blueprint('postings', __name__)
 @postings.route('/posts/page/<int:page>')
 def posts(page):
 	if 'loggedin' in session:
+		db.query("""SET session sql_mode='NO_ENGINE_SUBSTITUTION'""")
 		limit = 3
 		offset = page*limit - limit
 		next = page+1
@@ -28,18 +29,18 @@ def posts(page):
 								  """.format(limit, offset), False )
 		for post in post_details:
 			post_IDS.append(post['idPost'])
-		
+			
 		comments = db.select( """
-									SELECT * 
-									FROM comments 
-									LEFT JOIN users ON users.idUser = comments.idUser 
-									WHERE statusUser = 1 
-									AND statusComment = 1 AND idPost IN {0}
-									ORDER BY comments.dateComment ASC
-								  """.format(tuple(post_IDS)), False )
+								SELECT * 
+								FROM comments 
+								LEFT JOIN users ON users.idUser = comments.idUser
+								WHERE idPost IN {0} 
+								AND statusComment = 1 
+								AND statusUser = 1
+								ORDER BY comments.dateComment DESC
+							  """.format(tuple(post_IDS)), False )
 		
 		commentsAdded = {}
-		db.query("""SET session sql_mode='NO_ENGINE_SUBSTITUTION'""")
 		if post_details:
 			for post in post_details:
 				commentsAdded[post['idPost']] = []
@@ -47,14 +48,12 @@ def posts(page):
 				for comment in comments:
 					commentsAdded[comment['idPost']].append(comment)
 		return render_template('posts.html', post_details = post_details, username = session['username'], commentsAdded = commentsAdded, next = next, prev = prev, pages = pages)
-	return redirect (url_for('users.login'))
 
 
 @postings.route('/delete/<id_post>', methods=['GET', 'POST'])
 def delete(id_post):
-	if session['id'] == True:
 		db.delete( f'DELETE FROM posts WHERE idPost = {id_post} AND statusPost = 1' )
-	return redirect (url_for('postings.posts'))
+		return redirect(url_for('postings.posts'))
 
 
 @postings.route('/update/<id_post>', methods=['GET', 'POST'])
@@ -109,9 +108,8 @@ def comments(id_post):
 
 @postings.route('/deleteComments/<id_post>', methods=['GET', 'POST'])
 def deleteComments(id_post):
-	if session['id'] == True:
 		db.delete(f'DELETE FROM comments WHERE idComment = {id_post} AND statusComment = 1')
-	return redirect (url_for('postings.posts'))
+		return redirect (url_for('postings.posts'))
 		
 	
 
