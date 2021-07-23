@@ -34,9 +34,9 @@ def posts(page):
 								SELECT * 
 								FROM comments 
 								LEFT JOIN users ON users.idUser = comments.idUser
-								WHERE idPost IN {0} 
-								AND statusComment = 1 
+								WHERE statusComment = 1  
 								AND statusUser = 1
+								AND idPost IN {0}
 								ORDER BY comments.dateComment DESC
 							  """.format(tuple(post_IDS)), False )
 		
