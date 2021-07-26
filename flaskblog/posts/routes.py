@@ -121,7 +121,7 @@ def comments(id_post):
 @postings.route('/deleteComments/<id_post>', methods=['GET', 'POST'])
 def deleteComments( id_post ):
 	if id_post is None or not isinstance( id_post, str ): 
-		return base64.b64encode( json.dumps( { "error": 2, "message": "O erorare a avut loc in zona de date necesare!" } ).encode('utf8') )
+		return base64.b64encode( json.dumps( { "error": 2, "message": "O eroare a avut loc in zona de date necesare!" } ).encode('utf8') )
 
 	db.delete(f'DELETE FROM comments WHERE idComment = {id_post} AND statusComment = 1')
 	return base64.b64encode( json.dumps( { "error":0, "message":"Datele au fost modificate cu success!" } ).encode('utf8') )
