@@ -133,7 +133,7 @@
 		function setClickListeners() {
 			const deleteCommentsBtnHolder = document.querySelectorAll( ".deleteBtn" );
 			if ( deleteCommentsBtnHolder && deleteCommentsBtnHolder.length > 0 ) {
-				for ( let item=0; item < deleteCommentsBtnHolder.length; item++ ) {
+				for ( let item = 0; item < deleteCommentsBtnHolder.length; item++ ) {
 					let btn = deleteCommentsBtnHolder[item];
 					if ( btn == null ) { return false; }
 					btn.addEventListener( 'click', ( element ) => { onDeletePressed( element ); } )
