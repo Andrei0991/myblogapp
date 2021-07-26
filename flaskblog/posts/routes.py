@@ -1,61 +1,73 @@
 from flask import render_template, url_for, redirect, request, session, Blueprint, abort
 from flaskblog import db
-import re, math
+import re, math, base64, json
 
 postings = Blueprint('postings', __name__)
 
+def checker( function ):
+	def wrapper( **kwargs ):
+		if 'loggedin' not in session:
+			return redirect( url_for( 'users.login' ) )
+		return function( **kwargs )
 
+	wrapper.__name__ = function.__name__
+	return wrapper
+
+
+
+@checker
 @postings.route('/posts', defaults={'page': 1}, methods=['GET', 'POST'])
 @postings.route('/posts/page/<int:page>')
 def posts(page):
-	if 'loggedin' in session:
-		db.query("""SET session sql_mode='NO_ENGINE_SUBSTITUTION'""")
-		limit = 3
-		offset = page*limit - limit
-		next = page+1
-		prev = page-1
-		post_IDS = []
+	
+	db.query("""SET session sql_mode='NO_ENGINE_SUBSTITUTION'""")
+	limit = 3
+	offset = page*limit - limit
+	next = page+1
+	prev = page-1
+	post_IDS = []
 
-		count = db.select(""" SELECT count(*) AS count FROM posts """)
-		count = count['count']
-		pages = math.ceil(count / limit)
-		post_details = db.select( """
-									SELECT * 
-									FROM posts 
-									LEFT JOIN users ON users.idUser = posts.idUser 
-									WHERE statusPost = 1 
-									AND statusUser = 1 
-									ORDER BY posts.datePosted DESC LIMIT {0} OFFSET {1}
-								  """.format(limit, offset), False )
-		for post in post_details:
-			post_IDS.append(post['idPost'])
-			
-		comments = db.select( """
+	count = db.select(""" SELECT count(*) AS count FROM posts """)
+	count = count['count']
+	pages = math.ceil(count / limit)
+	post_details = db.select( """
 								SELECT * 
-								FROM comments 
-								LEFT JOIN users ON users.idUser = comments.idUser
-								WHERE statusComment = 1  
-								AND statusUser = 1
-								AND idPost IN {0}
-								ORDER BY comments.dateComment DESC
-							  """.format(tuple(post_IDS)), False )
+								FROM posts 
+								LEFT JOIN users ON users.idUser = posts.idUser 
+								WHERE statusPost = 1 
+								AND statusUser = 1 
+								ORDER BY posts.datePosted DESC LIMIT {0} OFFSET {1}
+								""".format(limit, offset), False )
+	for post in post_details:
+		post_IDS.append( str( post['idPost'] ) )
 		
-		commentsAdded = {}
-		if post_details:
-			for post in post_details:
-				commentsAdded[post['idPost']] = []
-			if comments:
-				for comment in comments:
-					commentsAdded[comment['idPost']].append(comment)
-		return render_template('posts.html', post_details = post_details, username = session['username'], commentsAdded = commentsAdded, next = next, prev = prev, pages = pages)
+	comments = db.select( """
+							SELECT * 
+							FROM comments 
+							LEFT JOIN users ON users.idUser = comments.idUser
+							WHERE statusComment = 1  
+							AND statusUser = 1
+							AND idPost IN ( {0} )
+							ORDER BY comments.dateComment DESC
+							""".format( ", ".join( post_IDS ) ), False )
+	
+	commentsAdded = {}
+	if post_details:
+		for post in post_details:
+			commentsAdded[post['idPost']] = []
+		if comments:
+			for comment in comments:
+				commentsAdded[comment['idPost']].append(comment)
 
+	return render_template('posts.html', post_details = post_details, username = session['username'], commentsAdded = commentsAdded, next = next, prev = prev, pages = pages)
 
+@checker
 @postings.route('/delete/<id_post>', methods=['GET', 'POST'])
 def delete(id_post):
 		db.delete( f'DELETE FROM posts WHERE idPost = {id_post} AND statusPost = 1' )
 		return redirect(url_for('postings.posts'))
 
-
+@checker
 @postings.route('/update/<id_post>', methods=['GET', 'POST'])
 def update(id_post):
 	if request.method == "POST":
@@ -73,7 +85,7 @@ def update(id_post):
 	return render_template( 'update.html', post = post )
 	 
 
-
+@checker
 @postings.route('/posts/<id_post>/comments', methods = ['GET', 'POST'])
 def comments(id_post):
 	errors = {}
@@ -105,15 +117,18 @@ def comments(id_post):
 
 
 
-
+@checker
 @postings.route('/deleteComments/<id_post>', methods=['GET', 'POST'])
-def deleteComments(id_post):
-		db.delete(f'DELETE FROM comments WHERE idComment = {id_post} AND statusComment = 1')
-		return redirect (url_for('postings.posts'))
+def deleteComments( id_post ):
+	if id_post is None or not isinstance( id_post, str ): 
+		return base64.b64encode( json.dumps( { "error": 2, "message": "O erorare a avut loc in zona de date necesare!" } ).encode('utf8') )
+
+	db.delete(f'DELETE FROM comments WHERE idComment = {id_post} AND statusComment = 1')
+	return base64.b64encode( json.dumps( { "error":0, "message":"Datele au fost modificate cu success!" } ).encode('utf8') )
 		
 	
 
-
+@checker
 @postings.route('/edit/<id_comment>', methods = ['GET', 'POST'])
 def edit(id_comment):
 	if request.method == "POST":
