@@ -42,9 +42,9 @@
 							{% if comment['idUser'] == session['id']%}
 								<a href="/edit/{{ comment['idComment'] }}"><button type="submit" class="btn btn-primary btn-sm">Edit Comment</button></a>
 							{% endif %}
-							{% if post['idUser'] == session['id'] %}	
-								<button class="btn btn-danger btn-sm deleteBtn" data-value="{{comment['idComment']}}">Delete Comment</button>
-							{% endif %}	
+							{% if post['idUser'] == session['id']%}						
+								<button type="button" class="btn btn-danger btn-sm deleteCommentButton" data-value = "{{ comment['idComment'] }}" data-toggle="modal" data-target="#exampleModal1">Delete Comment</button>
+							{% endif %}
 							<br>
 							<br>
 							<div class="post-message-holder text-small center text-success"></div>
@@ -100,6 +100,24 @@
 					</div>
 				</div>
 			</div>
+			<div class="modal fade" id="exampleModal1" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+				<div class="modal-dialog" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="exampleModalLabel">Delete Comment</h5>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						</div>
+						<div class="modal-body">
+							Are you sure you want to permanently delete this comment ?
+						</div>
+						<div id="value-holder" class= "d-none"></div>
+						<div class="modal-footer">
+							<button type="button" class="btn-sm btn-primary" data-dismiss="modal">NO</button>
+							<button class="btn btn-danger btn-sm deleteBtn">YES</button>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 	</div>
 {% endfor %}
@@ -130,7 +148,7 @@
 		window.onload = () => {
 			setClickListeners();
 		}
-
+		
 		function setClickListeners() {
 			const deleteCommentsBtnHolder = document.querySelectorAll( ".deleteBtn" );
 			if ( deleteCommentsBtnHolder && deleteCommentsBtnHolder.length > 0 ) {
@@ -142,13 +160,17 @@
 			}
 		}
 
-		function onDeletePressed( action ) {
-			
-			if ( action.target.getAttribute( 'data-value' ) ) {
-				// set this instance to that
-				const that = this;
+		$(document).on("click", ".deleteCommentButton", function () {
+			let myComment = $(this).data('value');
+			let modal = document.querySelector('#exampleModal1');
+			if (modal){
+				modal.querySelector('.deleteBtn').setAttribute('data-value', myComment) ;
+			}
+		});
 
-				let response =  new Promise( function( resolve, reject ) {
+		function onDeletePressed( action ) {
+			if ( action.target.getAttribute( 'data-value' ) ) {
+				let response = new Promise( function( resolve, reject ) {
 					// set the server request
 					var xhttp = new XMLHttpRequest();
 						xhttp.onreadystatechange = function() {
