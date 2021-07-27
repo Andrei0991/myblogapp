@@ -22,7 +22,7 @@
 			<div class="btn-toolbar">
 				{% if post['idUser'] == session['id'] %}
 					<a href="/update/{{ post['idPost'] }}"><button type="button" class="btn btn-primary btn-sm mr-2">Update Post</button></a>
-					<button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#exampleModal">Delete Post</button>
+					<button type="button" class="btn btn-danger btn-sm deletePostButton" data-value = "{{ post['idPost'] }}" data-toggle="modal" data-target="#exampleModal">Delete Post</button>
 				{% endif %}	
 			</div>
 			<br>
@@ -42,7 +42,7 @@
 							{% if comment['idUser'] == session['id']%}
 								<a href="/edit/{{ comment['idComment'] }}"><button type="submit" class="btn btn-primary btn-sm">Edit Comment</button></a>
 							{% endif %}
-							{% if post['idUser'] == session['id']%}						
+							{% if post['idUser'] == session['id'] %}						
 								<button type="button" class="btn btn-danger btn-sm deleteCommentButton" data-value = "{{ comment['idComment'] }}" data-toggle="modal" data-target="#exampleModal1">Delete Comment</button>
 							{% endif %}
 							<br>
@@ -82,7 +82,7 @@
 				</div>	
 			</div>					
 
-			<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel aria-hidden="true">
+			<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
 				<div class="modal-dialog" role="document">
 					<div class="modal-content">
 						<div class="modal-header">
@@ -95,12 +95,12 @@
 						</div>
 						<div class="modal-footer">
 							<button type="button" class="btn btn-primary" data-dismiss="modal">NO</button>
-							<a href="/delete/{{ post['idPost'] }}"><button type="button" class="btn btn-danger">YES</button></a>
+							<button type="button" class="btn btn-danger deleteBtnPost">YES</button>
 						</div>
 					</div>
 				</div>
 			</div>
-			
+
 			<div class="modal fade" id="exampleModal1" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
 				<div class="modal-dialog" role="document">
 					<div class="modal-content">
@@ -160,6 +160,14 @@
 				}
 			}
 		}
+
+		$(document).on("click", ".deletePostButton", function () {
+			let myPost = $(this).data('value');
+			let modal = document.querySelector('#exampleModal');
+			if (modal){
+				modal.querySelector('.deleteBtnPost').setAttribute('data-value', myPost) ;
+			}
+		});
 
 		$(document).on("click", ".deleteCommentButton", function () {
 			let myComment = $(this).data('value');
