@@ -103,6 +103,7 @@
 		</div>
 	</div>
 {% endfor %}
+	
 	<nav aria-label="Page navigation example">
 		<ul class="pagination">
 			<li class="page-item">
@@ -168,7 +169,7 @@
 
 				} );
 
-				response.then( ()=>{
+				response.then( () => {
 					// set the response to holder
 					setTimeout( ()=> {
 						let messageHolder = document.querySelector( '.post-message-holder' );
@@ -179,7 +180,7 @@
 						}
 						window.location.reload();
 					}, 500 );
-				} ).catch( ( error )=> {
+				} ).catch( ( error ) => {
 					let messageHolder = document.querySelector( '.post-message-holder' );
 					if ( messageHolder ) {
 						messageHolder.classList.add( 'text-danger');
@@ -191,6 +192,5 @@
 		}
 
 	</script>
-
 
 {% endblock %}
