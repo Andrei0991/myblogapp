@@ -14,7 +14,6 @@ def checker( function ):
 	return wrapper
 
 
-
 @checker
 @postings.route('/posts', defaults={'page': 1}, methods=['GET', 'POST'])
 @postings.route('/posts/page/<int:page>')
@@ -61,11 +60,16 @@ def posts(page):
 
 	return render_template('posts.html', post_details = post_details, username = session['username'], commentsAdded = commentsAdded, next = next, prev = prev, pages = pages)
 
+
 @checker
 @postings.route('/delete/<id_post>', methods=['GET', 'POST'])
 def delete(id_post):
-		db.delete( f'DELETE FROM posts WHERE idPost = {id_post} AND statusPost = 1' )
-		return redirect(url_for('postings.posts'))
+	if id_post is None or not isinstance( id_post, str ): 
+		return base64.b64encode( json.dumps( { "error": 2, "message": "A avut loc o eroare, va rugam incercati din nou !" } ).encode('utf8') )
+
+	db.delete(f'DELETE FROM posts WHERE idPost = {id_post} AND statusPost = 1')
+	return base64.b64encode( json.dumps( { "error":0, "message":"Datele postului au fost modificate cu succes !" } ).encode('utf8') )
+
 
 @checker
 @postings.route('/update/<id_post>', methods=['GET', 'POST'])
@@ -116,7 +120,6 @@ def comments(id_post):
 	return redirect(url_for('postings.posts'))
 
 
-
 @checker
 @postings.route('/deleteComments/<id_post>', methods=['GET', 'POST'])
 def deleteComments( id_post ):
@@ -127,7 +130,6 @@ def deleteComments( id_post ):
 	return base64.b64encode( json.dumps( { "error":0, "message":"Datele au fost modificate cu success!" } ).encode('utf8') )
 		
 	
-
 @checker
 @postings.route('/edit/<id_comment>', methods = ['GET', 'POST'])
 def edit(id_comment):
@@ -138,6 +140,4 @@ def edit(id_comment):
 	edit = db.select("SELECT * FROM comments WHERE idComment = '{0}'".format(id_comment,))
 	return render_template('edit_comment.html', edit = edit)
 	
-
-
 

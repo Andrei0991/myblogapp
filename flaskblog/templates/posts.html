@@ -23,7 +23,8 @@
 				{% if post['idUser'] == session['id'] %}
 					<a href="/update/{{ post['idPost'] }}"><button type="button" class="btn btn-primary btn-sm mr-2">Update Post</button></a>
 					<button type="button" class="btn btn-danger btn-sm deletePostButton" data-value = "{{ post['idPost'] }}" data-toggle="modal" data-target="#exampleModal">Delete Post</button>
-				{% endif %}	
+				{% endif %}
+				<div class="post-message-holder text-small center text-success"></div>	
 			</div>
 			<br>
 			<article class="media content-section">
@@ -93,9 +94,10 @@
 						<div class="modal-body">
 							Are you sure you want to delete this post ?
 						</div>
+						<div id="value-holder" class= "d-none"></div>
 						<div class="modal-footer">
-							<button type="button" class="btn btn-primary" data-dismiss="modal">NO</button>
-							<button type="button" class="btn btn-danger deleteBtnPost">YES</button>
+							<button type="button" class="btn-sm btn-primary" data-dismiss="modal">NO</button>
+							<button type="button" class="btn-sm btn-danger deleteBtnPost">YES</button>
 						</div>
 					</div>
 				</div>
@@ -109,7 +111,7 @@
 							<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 						</div>
 						<div class="modal-body">
-							Are you sure you want to permanently delete this comment ?
+							Are you sure you want to permanently delete this {{ commentsAdded['context'] }} ?
 						</div>
 						<div id="value-holder" class= "d-none"></div>
 						<div class="modal-footer">
@@ -148,13 +150,25 @@
 
 		window.onload = () => {
 			setClickListeners();
+			setClickPostListeners();
 		}
 		
 		function setClickListeners() {
-			const deleteCommentsBtnHolder = document.querySelectorAll( ".deleteBtn" );
+			const deleteCommentsBtnHolder = document.querySelectorAll( ".deleteBtn");
 			if ( deleteCommentsBtnHolder && deleteCommentsBtnHolder.length > 0 ) {
 				for ( let item = 0; item < deleteCommentsBtnHolder.length; item++ ) {
 					let btn = deleteCommentsBtnHolder[item];
+					if ( btn == null ) { return false; }
+					btn.addEventListener( 'click', ( element ) => { onDeletePressed( element ); } )
+				}
+			}
+		}
+
+		function setClickPostListeners() {
+			const deletePostBtnHolder = document.querySelectorAll( ".deleteBtnPost" );
+			if ( deletePostBtnHolder && deletePostBtnHolder.length > 0 ) {
+				for ( let item = 0; item < deletePostBtnHolder.length; item++ ) {
+					let btn = deletePostBtnHolder[item];
 					if ( btn == null ) { return false; }
 					btn.addEventListener( 'click', ( element ) => { onDeletePressed( element ); } )
 				}
@@ -195,10 +209,28 @@
 								resolve();
 							}
 						};
-						xhttp.open( 'POST', `/deleteComments/${action.target.getAttribute( 'data-value' )}`,true );
-						xhttp.send();
+						
+					xhttp.open( 'POST', `/delete/${action.target.getAttribute( 'data-value' )}`,true );
+					xhttp.send();
+				
+					var xhttp = new XMLHttpRequest();
+					xhttp.onreadystatechange = function() {
+						if ( this.readyState == 4 && this.status == 200 ) {
+							// convert the response from base64 and json to obj
+							let response = JSON.parse( atob( this.responseText ) );
+							// return the server error 
+							if( response['error'] > 0 ){
+								reject( { 'error':2, 'message':response['message'] } );
+								return false;
+							}
 
+							resolve();
+						}
+					};
+					xhttp.open( 'POST', `/deleteComments/${action.target.getAttribute( 'data-value' )}`,true )
+					xhttp.send();
 				} );
+				
 
 				response.then( () => {
 					// set the response to holder
