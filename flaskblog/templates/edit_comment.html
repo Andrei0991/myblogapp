@@ -6,6 +6,7 @@
         <form method="POST" action="/edit/{{ edit['idComment'] }}">
             <dl>
             <label class="labels">Edit comment <i class="fas fa-hand-point-down"></i></label>
+            <div class="msg text-danger"><strong>{{ errors['context'] }}</strong></div>	
             <p><input name="context" type="text" value = "{{ edit['context'] }}" required></p>
             </dl>
             <p><input type="submit" class="btn btn-primary btn-sm" value="Edit the comment"></p>

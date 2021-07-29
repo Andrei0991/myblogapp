@@ -10,10 +10,12 @@
         <br>
         <form action="/home" method="post">
             <input type="hidden" name="idUser" value="{{ idUser }}">
-            <label for="title">Title</label>
-            <p><input class="form-control" type="text" name="title"></p><br>
-            <label for="content">Content</label>
-            <textarea class="form-control" aria-label="With textarea" name ="content"></textarea><br>
+            <label for="title">Title</label><br>
+            <div class="msg text-danger">{{ errors['title'] }}</div>
+            <p><input class="form-control" type="text" name="title" value = "{{ form['title'] }}"></p><br>
+            <label for="content">Content</label><br>
+            <div class="msg text-danger">{{ errors['content'] }}</div>
+            <input class="form-control" type="text" name ="content" value = "{{ form['content'] }}"></input><br>
             <input type="submit" class="btn btn-primary btn-sm" value="Submit the post">
         </form>
     </div>

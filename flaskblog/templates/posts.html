@@ -54,7 +54,7 @@
 				</div>
 			</article>
 			<br>
-			<a href="#myModal/posts/{{ post.idPost }}/comments" class="btn btn-sm btn-primary" data-toggle="modal">Add a comment</a>
+			<a href="#myModal/posts/{{ post.idPost }}/comments" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#myModal/posts/{{ post.idPost }}/comments">Add a comment</a>
 			<div id="myModal/posts/{{ post.idPost }}/comments" class="modal fade">
 				<div class="modal-dialog">
 					<div class="modal-content">
@@ -71,6 +71,9 @@
 								</div>
 								<div class="form-group">
 									<label for="inputComment">Comments</label>
+									{% for error in errors %}
+										<div class="msg text-danger">{{ errors['context'] }}</div>
+									{% endfor %}	
 									<textarea class="form-control" id="inputComment" name="context" rows="5"></textarea>
 								</div>
 								<div class="modal-footer">
@@ -111,7 +114,7 @@
 							<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 						</div>
 						<div class="modal-body">
-							Are you sure you want to permanently delete this {{ commentsAdded['context'] }} ?
+							Are you sure you want to permanently delete this comment ?
 						</div>
 						<div id="value-holder" class= "d-none"></div>
 						<div class="modal-footer">
@@ -235,7 +238,7 @@
 				response.then( () => {
 					// set the response to holder
 					setTimeout( ()=> {
-						let messageHolder = document.querySelector( '.post-message-holder' );
+						let messageHolder = document.querySelectorAll( '.post-message-holder' );
 						if ( messageHolder ) {
 							messageHolder.classList.remove( 'text-danger');
 							messageHolder.classList.add( 'text-success');
@@ -244,7 +247,7 @@
 						window.location.reload();
 					}, 500 );
 				} ).catch( ( error ) => {
-					let messageHolder = document.querySelector( '.post-message-holder' );
+					let messageHolder = document.querySelectorAll( '.post-message-holder' );
 					if ( messageHolder ) {
 						messageHolder.classList.add( 'text-danger');
 						messageHolder.classList.remove( 'text-success');

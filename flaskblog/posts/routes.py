@@ -99,25 +99,22 @@ def comments(id_post):
 			if request.form['idPost'].isdigit():
 				values['idPost'] = request.form['idPost']
 			else:
-				errors['idPost'] = "//////"
+				errors['idPost'] = "Post ID is not OK !"
 		else:
-			errors['idPost'] = "..."
+			errors['idPost'] = "OK"
 
 		if 'context' in request.form:
 			if re.match( '^[a-zA-Z0-9\+\:\@\#\$\%\&\*\{\}\]\/\.\-\_\,\(\)\?\!\"\s]+$', request.form['context'] ):
 				values['context'] = request.form['context']
 			else:
-				errors['context'] = "//////"
+				errors['context'] = "Comment context does not match the credentials."
 		else:
-			errors['context'] = "...."
+			errors['context'] = "Context OK"
 
-		if len( errors.keys() ) > 0:
-			print(errors)
-			return
-
-		db.insert("INSERT INTO comments (idPost, idUser, context) VALUES ('{0}', '{1}', '{2}')".format( values['idPost'], session['id'], values['context'] ))
-
+		if len(errors) == 0:
+			db.insert("INSERT INTO comments (idPost, idUser, context) VALUES ('{0}', '{1}', '{2}')".format( values['idPost'], session['id'], values['context'] ))
 	return redirect(url_for('postings.posts'))
+
 
 
 @checker
@@ -133,11 +130,27 @@ def deleteComments( id_post ):
 @checker
 @postings.route('/edit/<id_comment>', methods = ['GET', 'POST'])
 def edit(id_comment):
+	errors = {}
+	values = {}
 	if request.method == "POST":
 		context = request.form['context']
-		db.update("UPDATE comments SET context = '{0}' WHERE idComment = '{1}' AND statusComment = 1".format(context, id_comment))
-		return redirect(url_for('postings.posts'))
+		if not id_comment or not id_comment.isdigit():
+				return abort(404)
+		user = db.select("SELECT * FROM comments WHERE idComment = '{0}'".format(id_comment,))
+		if user and user['idUser'] is not None:
+			if session['id'] != user['idUser']:
+				return abort(404)
+		if 'context' in request.form:
+			if re.match( '^[a-zA-Z0-9\+\:\@\#\$\%\&\*\{\}\]\/\.\-\_\,\(\)\?\!\"\s]+$', request.form['context'] ):
+				values['context'] = request.form['context']
+			else:
+				errors['context'] = "Comment context does not match the credentials."
+		else:
+			errors['context'] = "Context OK"
+		if len(errors) == 0:				
+			db.update("UPDATE comments SET context = '{0}' WHERE idComment = '{1}' AND statusComment = 1".format(context, id_comment))
+			return redirect(url_for('postings.posts'))
 	edit = db.select("SELECT * FROM comments WHERE idComment = '{0}'".format(id_comment,))
-	return render_template('edit_comment.html', edit = edit)
+	return render_template('edit_comment.html', edit = edit, errors = errors)
 	
 
