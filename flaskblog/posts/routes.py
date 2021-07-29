@@ -105,14 +105,18 @@ def comments(id_post):
 
 		if 'context' in request.form:
 			if re.match( '^[a-zA-Z0-9\+\:\@\#\$\%\&\*\{\}\]\/\.\-\_\,\(\)\?\!\"\s]+$', request.form['context'] ):
+				print('@????????')
 				values['context'] = request.form['context']
 			else:
+				print('@1241241240')
 				errors['context'] = "Comment context does not match the credentials."
 		else:
 			errors['context'] = "Context OK"
 
-		if len(errors) == 0:
-			db.insert("INSERT INTO comments (idPost, idUser, context) VALUES ('{0}', '{1}', '{2}')".format( values['idPost'], session['id'], values['context'] ))
+		if errors:
+			return base64.b64encode( json.dumps( { "error":2, "errors":errors } ).encode('utf8') )
+
+		db.insert("INSERT INTO comments (idPost, idUser, context) VALUES ('{0}', '{1}', '{2}')".format( values['idPost'], session['id'], values['context'] ))
 	return redirect(url_for('postings.posts'))
 
 

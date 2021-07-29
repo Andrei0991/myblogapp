@@ -63,7 +63,7 @@
 							<button type="button" class="close  d-inline-block" data-dismiss="modal">&times;</button>
 						</div>
 						<div class="modal-body">
-							<form method="POST" action="{{url_for('postings.comments', id_post = post['idPost'])}}">
+							<form method="POST">
 								<input type="hidden" name="idPost" value="{{ post.idPost }}">
 								<div class="form-group">
 									<label for="inputName">User: </label>
@@ -71,14 +71,13 @@
 								</div>
 								<div class="form-group">
 									<label for="inputComment">Comments</label>
-									{% for error in errors %}
-										<div class="msg text-danger">{{ errors['context'] }}</div>
-									{% endfor %}	
+								
 									<textarea class="form-control" id="inputComment" name="context" rows="5"></textarea>
 								</div>
+								<div class="formMessage text-sm text-danger"></div>
 								<div class="modal-footer">
 									<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-									<button type="submit" class="btn btn-primary">Send</button>
+									<button  class="btn btn-primary" onclick= "javascript:addComment()">Send</button>
 								</div>
 							</form>
 						</div>
@@ -155,7 +154,53 @@
 			setClickListeners();
 			setClickPostListeners();
 		}
-		
+		function addComment(){
+			let comment = document.querySelector("#inputComment");
+			let messageHolder = document.querySelector(".formMessage");
+			let idPost = document.querySelector('input[name="idPost"]').value;
+			if (! comment){
+				messageHolder.innerHTML = "Comment "; 
+				return false;
+			}
+			let response = new Promise( function( resolve, reject ) {
+					// set the server request
+					var xhttp = new XMLHttpRequest();
+						xhttp.onreadystatechange = function() {
+							if ( this.readyState == 4 && this.status == 200 ) {
+								// convert the response from base64 and json to obj
+								let response = JSON.parse( atob( this.responseText ) );
+								// return the server error 
+								if( response['error'] == 2 ){
+									reject( { 'error':2, 'errors':response['errors'] } );
+									return false;
+								}
+
+								resolve();
+							}
+						};
+						
+					xhttp.open( 'POST', `/posts/${idPost}/comments`,true );
+					xhttp.send({'context':comment.innerHTML});
+				
+				} );
+				
+
+				response.then( () => {
+					// set the response to holder
+					setTimeout( ()=> {
+						let messageHolder = document.querySelectorAll( '.formMessage' );
+						if ( messageHolder ) {
+							messageHolder.innerHTML = response['errors']['context'];
+						}
+						window.location.reload();
+					}, 500 );
+				} ).catch( ( error ) => {
+					let messageHolder = document.querySelectorAll( '.formMessage' );
+					if ( messageHolder ) {
+						messageHolder.innerHTML = response['errors']['context'];
+					}
+				} );
+		}
 		function setClickListeners() {
 			const deleteCommentsBtnHolder = document.querySelectorAll( ".deleteBtn");
 			if ( deleteCommentsBtnHolder && deleteCommentsBtnHolder.length > 0 ) {
