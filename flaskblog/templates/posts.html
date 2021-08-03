@@ -54,8 +54,11 @@
 				</div>
 			</article>
 			<br>
-			<a href="#myModal/posts/{{ post.idPost }}/comments" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#myModal/posts/{{ post.idPost }}/comments">Add a comment</a>
-			<div id="myModal/posts/{{ post.idPost }}/comments" class="modal fade">
+			<button data-target="#myModal/add-comment" 
+				class="btn btn-sm btn-primary" 
+				data-toggle="modal">Add a comment
+			</button>
+			<div id="myModal/add-comment" class="modal fade caca-modal">
 				<div class="modal-dialog">
 					<div class="modal-content">
 						<div class="modal-header">
@@ -63,23 +66,21 @@
 							<button type="button" class="close  d-inline-block" data-dismiss="modal">&times;</button>
 						</div>
 						<div class="modal-body">
-							<form method="POST">
-								<input type="hidden" name="idPost" value="{{ post.idPost }}">
-								<div class="form-group">
-									<label for="inputName">User: </label>
-									<a class="mr-2" href="#">{{ username }}</a>
-								</div>
-								<div class="form-group">
-									<label for="inputComment">Comments</label>
-								
-									<textarea class="form-control" id="inputComment" name="context" rows="5"></textarea>
-								</div>
-								<div class="formMessage text-sm text-danger"></div>
-								<div class="modal-footer">
-									<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-									<button  class="btn btn-primary" onclick= "javascript:addComment()">Send</button>
-								</div>
-							</form>
+							<input type="hidden" name="idPost" value="{{ post.idPost }}">
+							<div class="form-group">
+								<label for="inputName">User: </label>
+								<a class="mr-2" href="#">{{ username }}</a>
+							</div>
+							<div class="form-group">
+								<label for="inputComment">Comments</label>
+							
+								<textarea class="form-control" id="inputComment" name="context" rows="5"></textarea>
+							</div>
+							<strong><div class="formMessage text-sm text-danger"></div></strong>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+								<button  class="btn btn-primary" onclick= "javascript:addComment( this );">Send</button>
+							</div>
 						</div>
 					</div>
 				</div>	
@@ -153,8 +154,11 @@
 		window.onload = () => {
 			setClickListeners();
 			setClickPostListeners();
+			// $('.caca-modal').modal({backdrop: 'static', keyboard: false});
 		}
-		function addComment(){
+		function addComment( action ){
+			// console.log("ASDSDD");
+			
 			let comment = document.querySelector("#inputComment");
 			let messageHolder = document.querySelector(".formMessage");
 			let idPost = document.querySelector('input[name="idPost"]').value;
@@ -162,7 +166,7 @@
 				messageHolder.innerHTML = "Comment "; 
 				return false;
 			}
-			let response = new Promise( function( resolve, reject ) {
+			let promise = new Promise( function( resolve, reject ) {
 					// set the server request
 					var xhttp = new XMLHttpRequest();
 						xhttp.onreadystatechange = function() {
@@ -170,35 +174,42 @@
 								// convert the response from base64 and json to obj
 								let response = JSON.parse( atob( this.responseText ) );
 								// return the server error 
-								if( response['error'] == 2 ){
+								if( response['error'] > 0 ){
 									reject( { 'error':2, 'errors':response['errors'] } );
 									return false;
 								}
 
-								resolve();
+								resolve( response );
 							}
 						};
 						
-					xhttp.open( 'POST', `/posts/${idPost}/comments`,true );
-					xhttp.send({'context':comment.innerHTML});
+					xhttp.open( 'POST', `/add-comment`,true );
+					xhttp.send( JSON.stringify( { 'context':comment.innerHTML, 'idPost':idPost } ) );
 				
 				} );
 				
 
-				response.then( () => {
+				promise.then( ( data ) => {
 					// set the response to holder
 					setTimeout( ()=> {
-						let messageHolder = document.querySelectorAll( '.formMessage' );
+						let messageHolder = document.querySelector( '.formMessage' );
 						if ( messageHolder ) {
-							messageHolder.innerHTML = response['errors']['context'];
+							messageHolder.innerHTML = data.message;
 						}
 						window.location.reload();
 					}, 500 );
 				} ).catch( ( error ) => {
-					let messageHolder = document.querySelectorAll( '.formMessage' );
+					let messageHolder = document.querySelector( '.formMessage' );
 					if ( messageHolder ) {
-						messageHolder.innerHTML = response['errors']['context'];
+						messageHolder.innerHTML = `Eroare::${error['error']} <br> Erori::${error["message"]}`;
 					}
+					// if ( error['errors'] ) {
+					// 	// console.log("Aits");
+					// 	for ( const item in error['errors'] ) {
+					// 		console.log( item );
+					// 		// console.log( `Key::${item}=${error['errors'][item]}` );
+					// 	}
+					// }
 				} );
 		}
 		function setClickListeners() {

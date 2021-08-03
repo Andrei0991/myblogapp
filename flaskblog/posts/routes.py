@@ -18,7 +18,6 @@ def checker( function ):
 @postings.route('/posts', defaults={'page': 1}, methods=['GET', 'POST'])
 @postings.route('/posts/page/<int:page>')
 def posts(page):
-	
 	db.query("""SET session sql_mode='NO_ENGINE_SUBSTITUTION'""")
 	limit = 3
 	offset = page*limit - limit
@@ -57,7 +56,7 @@ def posts(page):
 		if comments:
 			for comment in comments:
 				commentsAdded[comment['idPost']].append(comment)
-
+	# return "False"
 	return render_template('posts.html', post_details = post_details, username = session['username'], commentsAdded = commentsAdded, next = next, prev = prev, pages = pages)
 
 
@@ -90,34 +89,43 @@ def update(id_post):
 	 
 
 @checker
-@postings.route('/posts/<id_post>/comments', methods = ['GET', 'POST'])
-def comments(id_post):
+@postings.route('/add-comment', methods = [ 'POST' ] )
+def comments():
+
 	errors = {}
 	values = {}
-	if request.method == "POST":
-		if 'idPost' in request.form:
-			if request.form['idPost'].isdigit():
-				values['idPost'] = request.form['idPost']
-			else:
-				errors['idPost'] = "Post ID is not OK !"
+	data = request.get_data().decode('utf-8')
+
+	# print( request.data )
+	print(request.get_data().decode('utf-8'))
+	if not data or 'idPost' not in data:
+		return base64.b64encode( json.dumps( { "error":2, "message": "O eroare a avut loc in zona postarilor trimise." } ) )
+
+	if 'idPost' in data:
+		if data[1].isdigit():
+			values[1] = data[1]
 		else:
-			errors['idPost'] = "OK"
+			return base64.b64encode( json.dumps( { "error":2, "message": "Post ID is not OK !" } ) )
+			# errors[1] = "Post ID is not OK !"
+	else:
+		return base64.b64encode( json.dumps( { "error":0, "message": "OK !" } ) )
+		# errors[1] = "OK"
 
-		if 'context' in request.form:
-			if re.match( '^[a-zA-Z0-9\+\:\@\#\$\%\&\*\{\}\]\/\.\-\_\,\(\)\?\!\"\s]+$', request.form['context'] ):
-				print('@????????')
-				values['context'] = request.form['context']
-			else:
-				print('@1241241240')
-				errors['context'] = "Comment context does not match the credentials."
+	if 'context' in data:
+		if re.match( '^[a-zA-Z0-9\+\:\@\#\$\%\&\*\{\}\]\/\.\-\_\,\(\)\?\!\"\s]+$', data[0] ):
+			values[0] = data[0]
 		else:
-			errors['context'] = "Context OK"
+			return base64.b64encode( json.dumps( { "error":2, "message": "Contextul comentariului nu corespunde." } ) )
+			# errors[0] = "Comment context does not match the credentials."
+	else:
+		return base64.b64encode( json.dumps( { "error":0, "message": "Context OK" } ) )
+		# errors[0] = "Context OK"
 
-		if errors:
-			return base64.b64encode( json.dumps( { "error":2, "errors":errors } ).encode('utf8') )
+	if errors:
+		return base64.b64encode( json.dumps( { "error":2, "message":"O eroare a avut loc in zona de date trimise." } ).encode('utf8') )
 
-		db.insert("INSERT INTO comments (idPost, idUser, context) VALUES ('{0}', '{1}', '{2}')".format( values['idPost'], session['id'], values['context'] ))
-	return redirect(url_for('postings.posts'))
+	db.insert("INSERT INTO comments (idPost, idUser, context) VALUES ('{0}', '{1}', '{2}')".format( values['idPost'], session['id'], values['context'] ))
+	return base64.b64encode( json.dumps( { "error":0, "message":"Datele au fost salvate cu success." } ).encode('utf8') )
 
 
 
