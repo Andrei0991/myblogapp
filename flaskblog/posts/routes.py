@@ -96,8 +96,8 @@ def comments():
 	values = {}
 	data = request.get_data().decode('utf-8')
 
-	# print( request.data )
 	print(request.get_data().decode('utf-8'))
+	
 	if not data or 'idPost' not in data:
 		return base64.b64encode( json.dumps( { "error":2, "message": "O eroare a avut loc in zona postarilor trimise." } ) )
 
@@ -122,7 +122,7 @@ def comments():
 		# errors[0] = "Context OK"
 
 	if errors:
-		return base64.b64encode( json.dumps( { "error":2, "message":"O eroare a avut loc in zona de date trimise." } ).encode('utf8') )
+		return base64.b64encode( json.dumps( { "error":2, "errors" : "errors" } ).encode('utf8') )
 
 	db.insert("INSERT INTO comments (idPost, idUser, context) VALUES ('{0}', '{1}', '{2}')".format( values['idPost'], session['id'], values['context'] ))
 	return base64.b64encode( json.dumps( { "error":0, "message":"Datele au fost salvate cu success." } ).encode('utf8') )

@@ -58,7 +58,7 @@
 				class="btn btn-sm btn-primary" 
 				data-toggle="modal">Add a comment
 			</button>
-			<div id="myModal/add-comment" class="modal fade caca-modal">
+			<div id="myModal/add-comment" class="modal fade">
 				<div class="modal-dialog">
 					<div class="modal-content">
 						<div class="modal-header">
@@ -154,7 +154,7 @@
 		window.onload = () => {
 			setClickListeners();
 			setClickPostListeners();
-			// $('.caca-modal').modal({backdrop: 'static', keyboard: false});
+			
 		}
 		function addComment( action ){
 			// console.log("ASDSDD");
@@ -163,7 +163,7 @@
 			let messageHolder = document.querySelector(".formMessage");
 			let idPost = document.querySelector('input[name="idPost"]').value;
 			if (! comment){
-				messageHolder.innerHTML = "Comment "; 
+				messageHolder.innerHTML = "Comment"; 
 				return false;
 			}
 			let promise = new Promise( function( resolve, reject ) {
@@ -183,7 +183,7 @@
 							}
 						};
 						
-					xhttp.open( 'POST', `/add-comment`,true );
+					xhttp.open( 'POST', `/add-comment`, true );
 					xhttp.send( JSON.stringify( { 'context':comment.innerHTML, 'idPost':idPost } ) );
 				
 				} );
