@@ -79,7 +79,7 @@
 							<strong><div class="formMessage text-sm text-danger"></div></strong>
 							<div class="modal-footer">
 								<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-								<button  class="btn btn-primary" onclick= "javascript:addComment( this );">Send</button>
+								<button class="btn btn-primary" onclick= "javascript:addComment( this );">Send</button>
 							</div>
 						</div>
 					</div>
@@ -199,15 +199,18 @@
 						window.location.reload();
 					}, 500 );
 				} ).catch( ( error ) => {
+					console.log( error );
 					let messageHolder = document.querySelector( '.formMessage' );
-					if ( messageHolder ) {
-						messageHolder.innerHTML = `Eroare::${error['error']} <br> Erori::${error['errors']['context']}`;
+					if ( messageHolder && messageHolder.length > 0 ) {
+						for ( let i = 0; i < messageHolder.length; i++ ) {
+							messageHolder[i].innerHTML = `Eroare: ${error['error']} <br> Erori: ${error['errors']['errors']}`;
+						}
 					}
 					// if ( error['errors'] ) {
 					// 	// console.log("Aits");
 					// 	for ( const item in error['errors'] ) {
 					// 		console.log( item );
-					// 		// console.log( `Key::${item}=${error['errors'][item]}` );
+					// 		console.log( `Key::${item}=${error['errors'][item]}` );
 					// 	}
 					// }
 				} );
