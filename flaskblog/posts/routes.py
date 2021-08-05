@@ -103,23 +103,23 @@ def comments():
 
 	if 'idPost' in data:
 		if data[1].isdigit():
-			values[1] = data[1]
+			values["idPost"] = data[1]
 		else:
-			return base64.b64encode( json.dumps( { "error":2, "message": "Post ID is not OK !" } ) )
-			# errors[1] = "Post ID is not OK !"
+			# return base64.b64encode( json.dumps( { "error":2, "message": "Post ID is not OK !" } ) )
+			errors['idPost'] = "Post ID is not OK !"
 	else:
-		return base64.b64encode( json.dumps( { "error":0, "message": "OK !" } ) )
-		# errors[1] = "OK"
+		# return base64.b64encode( json.dumps( { "error":0, "message": "OK !" } ) )
+		errors["idPost"] = "OK"
 
 	if 'context' in data:
 		if re.match( '^[a-zA-Z0-9\+\:\@\#\$\%\&\*\{\}\]\/\.\-\_\,\(\)\?\!\"\s]+$', data[0] ):
-			values[0] = data[0]
+			values["context"] = data[0]
 		else:
-			return base64.b64encode( json.dumps( { "error":2, "message": "Contextul comentariului nu corespunde." } ) )
-			# errors[0] = "Comment context does not match the credentials."
+			# return base64.b64encode( json.dumps( { "error":2, "message": "Contextul comentariului nu corespunde." } ) )
+			errors["context"] = "Contextul comentariului nu corespunde."
 	else:
-		return base64.b64encode( json.dumps( { "error":0, "message": "Context OK" } ) )
-		# errors[0] = "Context OK"
+		# return base64.b64encode( json.dumps( { "error":0, "message": "Context OK" } ) )
+		errors["context"] = "Context OK"
 
 	if errors:
 		return base64.b64encode( json.dumps( { "error":2, "errors" : "errors" } ).encode('utf8') )

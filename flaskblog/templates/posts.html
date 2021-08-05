@@ -201,7 +201,7 @@
 				} ).catch( ( error ) => {
 					let messageHolder = document.querySelector( '.formMessage' );
 					if ( messageHolder ) {
-						messageHolder.innerHTML = `Eroare::${error['error']} <br> Erori::${error["message"]}`;
+						messageHolder.innerHTML = `Eroare::${error['error']} <br> Erori::${error['errors']['context']}`;
 					}
 					// if ( error['errors'] ) {
 					// 	// console.log("Aits");
