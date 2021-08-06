@@ -48,7 +48,7 @@
 							{% endif %}
 							<br>
 							<br>
-							<div class="post-message-holder text-small center text-success"></div>
+							<div class="post-comment-holder text-small center text-success"></div>
 						{% endfor %}
 					</div>
 				</div>
@@ -67,16 +67,19 @@
 						</div>
 						<div class="modal-body">
 							<input type="hidden" name="idPost" value="{{ post.idPost }}">
+
 							<div class="form-group">
 								<label for="inputName">User: </label>
 								<a class="mr-2" href="#">{{ username }}</a>
 							</div>
+
 							<div class="form-group">
 								<label for="inputComment">Comments</label>
-							
 								<textarea class="form-control" id="inputComment" name="context" rows="5"></textarea>
+								<div class="text-danger text-small text-center comment-message-holder"></div>
 							</div>
-							<strong><div class="formMessage text-sm text-danger"></div></strong>
+							<div class="formMessage text-sm text-danger text-center alert-danger"></div>
+
 							<div class="modal-footer">
 								<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
 								<button class="btn btn-primary" onclick= "javascript:addComment( this );">Send</button>
@@ -156,16 +159,65 @@
 			setClickPostListeners();
 			
 		}
+		
+		
+		function onDeleteComments( action ) {
+			if ( action.target.getAttribute( 'data-value' ) ) {
+				let response = new Promise( function( resolve, reject ) {
+					//set the server request
+					var xhttp = new XMLHttpRequest();
+						xhttp.onreadystatechange = function() {
+							if ( this.readyState == 4 && this.status == 200 ) {
+								// convert the response from base64 and json to obj
+								let response = JSON.parse( atob( this.responseText ) );
+								// return the server error 
+								if( response['error'] > 0 ){
+									reject( { 'error':2, 'message':response['message'] } );
+									return false;
+								}
+
+								resolve();
+							}
+						};
+						
+					xhttp.open( 'POST', `/deleteComments/${action.target.getAttribute( 'data-value' )}`,true );
+					xhttp.send();
+				} );
+
+				response.then( () => {
+					// set the response to holder
+					setTimeout( ()=> {
+						let messageHolder = document.querySelectorAll( '.post-comment-holder' );
+						if ( messageHolder > 0 ) {
+							messageHolder.classList.remove( 'text-danger');
+							messageHolder.classList.add( 'text-success');
+							messageHolder.innerHTML = response['message'];
+						}
+						window.location.reload();
+					}, 500 );
+				} ).catch( ( error ) => {
+					let messageHolder = document.querySelectorAll( '.post-comment-holder' );
+					if ( messageHolder ) {
+						messageHolder.classList.add( 'text-danger');
+						messageHolder.classList.remove( 'text-success');
+						messageHolder.innerHTML = `ERROR::${ error['message']}`;
+					}
+				} );
+			}
+		}	
+
 		function addComment( action ){
-			// console.log("ASDSDD");
 			
 			let comment = document.querySelector("#inputComment");
 			let messageHolder = document.querySelector(".formMessage");
 			let idPost = document.querySelector('input[name="idPost"]').value;
-			if (! comment){
+			let commentError = document.querySelector( ".comment-message-holder" );
+
+			if ( !comment ) {
 				messageHolder.innerHTML = "Comment"; 
 				return false;
 			}
+
 			let promise = new Promise( function( resolve, reject ) {
 					// set the server request
 					var xhttp = new XMLHttpRequest();
@@ -174,45 +226,55 @@
 								// convert the response from base64 and json to obj
 								let response = JSON.parse( atob( this.responseText ) );
 								// return the server error 
+								console.log("RESPONSE::", response )
 								if( response['error'] > 0 ){
-									reject( { 'error':2, 'errors':response['errors'] } );
+									reject( { 'error':2, 'errors':response } );
 									return false;
 								}
-
 								resolve( response );
 							}
 						};
 						
 					xhttp.open( 'POST', `/add-comment`, true );
-					xhttp.send( JSON.stringify( { 'context':comment.innerHTML, 'idPost':idPost } ) );
+					xhttp.send( JSON.stringify( { 'context':comment.value, 'idPost':idPost } ) );
 				
 				} );
 				
 
 				promise.then( ( data ) => {
 					// set the response to holder
-					setTimeout( ()=> {
-						let messageHolder = document.querySelector( '.formMessage' );
+					let messageHolder = document.querySelector( '.formMessage' );
 						if ( messageHolder ) {
 							messageHolder.innerHTML = data.message;
 						}
+					setTimeout( ()=> {
 						window.location.reload();
-					}, 500 );
+					}, 1000 );
 				} ).catch( ( error ) => {
-					console.log( error );
 					let messageHolder = document.querySelector( '.formMessage' );
-					if ( messageHolder && messageHolder.length > 0 ) {
-						for ( let i = 0; i < messageHolder.length; i++ ) {
-							messageHolder[i].innerHTML = `Eroare: ${error['error']} <br> Erori: ${error['errors']['errors']}`;
+					if ( messageHolder ) {
+						// check general error
+						if ( error['errors']['errors'] ) {
+							messageHolder.innerHTML = `Eroare: ${error['error']} <br> Erori: ${error['errors']['errors']}`;
+							return false;
 						}
+						// check validation errors
+						if ( error['errors']['fields'] ) {
+							// go through all errors
+							for ( const item in error['errors']['fields'] ) {
+								// set current value
+								let value = error['errors']['fields'][item];
+
+								if ( item == 'context' ) {
+									commentError.innerHTML = value;
+								}
+								if ( item == 'idPost' ) {
+									messageHolder.innerHTML = value;
+								}
+							}
+						}
+
 					}
-					// if ( error['errors'] ) {
-					// 	// console.log("Aits");
-					// 	for ( const item in error['errors'] ) {
-					// 		console.log( item );
-					// 		console.log( `Key::${item}=${error['errors'][item]}` );
-					// 	}
-					// }
 				} );
 		}
 		function setClickListeners() {
@@ -221,7 +283,7 @@
 				for ( let item = 0; item < deleteCommentsBtnHolder.length; item++ ) {
 					let btn = deleteCommentsBtnHolder[item];
 					if ( btn == null ) { return false; }
-					btn.addEventListener( 'click', ( element ) => { onDeletePressed( element ); } )
+					btn.addEventListener( 'click', ( element ) => { onDeleteComments( element ); } )
 				}
 			}
 		}
@@ -256,7 +318,7 @@
 		function onDeletePressed( action ) {
 			if ( action.target.getAttribute( 'data-value' ) ) {
 				let response = new Promise( function( resolve, reject ) {
-					// set the server request
+					//set the server request
 					var xhttp = new XMLHttpRequest();
 						xhttp.onreadystatechange = function() {
 							if ( this.readyState == 4 && this.status == 200 ) {
@@ -275,30 +337,14 @@
 					xhttp.open( 'POST', `/delete/${action.target.getAttribute( 'data-value' )}`,true );
 					xhttp.send();
 				
-					var xhttp = new XMLHttpRequest();
-					xhttp.onreadystatechange = function() {
-						if ( this.readyState == 4 && this.status == 200 ) {
-							// convert the response from base64 and json to obj
-							let response = JSON.parse( atob( this.responseText ) );
-							// return the server error 
-							if( response['error'] > 0 ){
-								reject( { 'error':2, 'message':response['message'] } );
-								return false;
-							}
-
-							resolve();
-						}
-					};
-					xhttp.open( 'POST', `/deleteComments/${action.target.getAttribute( 'data-value' )}`,true )
-					xhttp.send();
-				} );
+				 } );
 				
 
 				response.then( () => {
 					// set the response to holder
 					setTimeout( ()=> {
 						let messageHolder = document.querySelectorAll( '.post-message-holder' );
-						if ( messageHolder ) {
+						if ( messageHolder > 0 ) {
 							messageHolder.classList.remove( 'text-danger');
 							messageHolder.classList.add( 'text-success');
 							messageHolder.innerHTML = response['message'];
@@ -315,7 +361,6 @@
 				} );
 			}
 		}
-
 	</script>
 
 {% endblock %}

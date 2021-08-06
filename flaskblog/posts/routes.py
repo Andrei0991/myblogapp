@@ -94,35 +94,33 @@ def comments():
 
 	errors = {}
 	values = {}
-	data = request.get_data().decode('utf-8')
+	data = json.loads( request.get_data().decode('utf-8') )
 
-	# print(request.get_data().decode('utf-8'))
-	
-	if not data or 'idPost' not in data:
+	if not data:
 		return base64.b64encode( json.dumps( { "error":2, "errors": "O eroare a avut loc in zona postarilor trimise." } ) )
 
-	if 'idPost' in data:
-		if data[1].isdigit():
-			values['idPost'] = data[1]
-		else:
-			# return base64.b64encode( json.dumps( { "error":2, "message": "Post ID is not OK !" } ) )
-			errors['idPost'] = "Post ID is not OK !"
-	else:
-		# return base64.b64encode( json.dumps( { "error":0, "message": "OK !" } ) )
-		errors['idPost'] = "idPost OK"
-
 	if 'context' in data:
-		if re.match( '^[a-zA-Z0-9\+\:\@\#\$\%\&\*\{\}\]\/\.\-\_\,\(\)\?\!\"\s]+$', data[0] ):
-			values['context'] = data[0]
+		if re.match( '^[a-zA-Z0-9\s@#?!$*%.,()\[\]\{\}" *"]+$', data['context'] ):
+			values['context'] = data['context'].strip()
 		else:
-			# return base64.b64encode( json.dumps( { "error":2, "message": "Contextul comentariului nu corespunde." } ) )
-			errors['context'] = "Contextul comentariului nu corespunde."
+			errors['context'] = "Campul comments contine caractere interzise."
 	else:
-		# return base64.b64encode( json.dumps( { "error":0, "message": "Context OK" } ) )
-		errors['context'] = "Context OK"
+		errors['context'] = "Campul comments nu a fost completat."
 	
-	if len(errors.keys()) > 0:
-		return base64.b64encode( json.dumps( { "error":2, "errors" : errors } ).encode('utf8') )
+	if 'idPost' in data:
+		if re.match( '^[0-9]+$', data['idPost'] ):
+			values['idPost'] = data['idPost']
+		else:
+			errors['idPost'] = "O eroare a avut loc in zona datelor trimise."
+	else:
+		errors['idPost'] = "O eroare a avut loc in zona datelor trimise."
+	# """
+	# "fields":{
+	# 	'context':"Campul comments contine caractere interzise."
+	# }
+	# """
+	if len( errors.keys() ) > 0:
+		return base64.b64encode( json.dumps( { "error":2, "fields" : errors } ).encode('utf8') )
 
 	db.insert("INSERT INTO comments (idPost, idUser, context) VALUES ('{0}', '{1}', '{2}')".format( values['idPost'], session['id'], values['context'] ))
 	return base64.b64encode( json.dumps( { "error":0, "message":"Datele au fost salvate cu success." } ).encode('utf8') )
