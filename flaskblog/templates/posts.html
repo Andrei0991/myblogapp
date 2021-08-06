@@ -41,7 +41,7 @@
 							<br>
 							<br>
 							{% if comment['idUser'] == session['id']%}
-								<a href="/edit/{{ comment['idComment'] }}"><button type="submit" class="btn btn-primary btn-sm">Edit Comment</button></a>
+								<a href="/edit/{{ comment['idComment'] }}"><button type="submit" class="btn btn-primary btn-sm editBtn" data-value = "{{ comment['idComment'] }}">Edit Comment</button></a>
 							{% endif %}
 							{% if post['idUser'] == session['id'] %}						
 								<button type="button" class="btn btn-danger btn-sm deleteCommentButton" data-value = "{{ comment['idComment'] }}" data-toggle="modal" data-target="#exampleModal1">Delete Comment</button>
@@ -160,6 +160,87 @@
 			
 		}
 		
+		function editComments(action){
+			let editCommentsBtn = document.querySelector('.editBtn');
+			
+			let promise = new Promise( function( resolve, reject ) {
+					// set the server request
+					var xhttp = new XMLHttpRequest();
+						xhttp.onreadystatechange = function() {
+							if ( this.readyState == 4 && this.status == 200 ) {
+								// convert the response from base64 and json to obj
+								let response = JSON.parse( atob( this.responseText ) );
+								// return the server error 
+								console.log("RESPONSE::", response )
+								if( response['error'] > 0 ){
+									reject( { 'error':2, 'errors':response } );
+									return false;
+								}
+								resolve( response );
+							}
+						};
+						
+					xhttp.open( 'POST', `/edit`, true );
+					xhttp.send();
+				
+				} );
+				
+
+				promise.then( ( data ) => {
+					// set the response to holder
+					let messageHolder = document.querySelector( '.formMessage' );
+						if ( messageHolder ) {
+							messageHolder.innerHTML = data.message;
+						}
+					setTimeout( ()=> {
+						window.location.reload();
+					}, 1000 );
+				} ).catch( ( error ) => {
+					let messageHolder = document.querySelector( '.formMessage' );
+					if ( messageHolder ) {
+						// check general error
+						if ( error['errors']['errors'] ) {
+							messageHolder.innerHTML = `Eroare: ${error['error']} <br> Erori: ${error['errors']['errors']}`;
+							return false;
+						}
+						// check validation errors
+						if ( error['errors']['fields'] ) {
+							// go through all errors
+							for ( const item in error['errors']['fields'] ) {
+								// set current value
+								let value = error['errors']['fields'][item];
+
+								if ( item == 'context' ) {
+									commentError.innerHTML = value;
+								}
+								if ( item == 'idPost' ) {
+									messageHolder.innerHTML = value;
+								}
+							}
+						}
+
+					}
+				} );
+		}
+
+		function setClickListeners() {
+			const deleteCommentsBtnHolder = document.querySelectorAll( ".deleteBtn");
+			if ( deleteCommentsBtnHolder && deleteCommentsBtnHolder.length > 0 ) {
+				for ( let item = 0; item < deleteCommentsBtnHolder.length; item++ ) {
+					let btn = deleteCommentsBtnHolder[item];
+					if ( btn == null ) { return false; }
+					btn.addEventListener( 'click', ( element ) => { onDeleteComments( element ); } )
+				}
+			}
+		}
+
+		$(document).on("click", ".deleteCommentButton", function () {
+			let myComment = $(this).data('value');
+			let modal = document.querySelector('#exampleModal1');
+			if (modal){
+				modal.querySelector('.deleteBtn').setAttribute('data-value', myComment) ;
+			}
+		});
 		
 		function onDeleteComments( action ) {
 			if ( action.target.getAttribute( 'data-value' ) ) {
@@ -277,16 +358,6 @@
 					}
 				} );
 		}
-		function setClickListeners() {
-			const deleteCommentsBtnHolder = document.querySelectorAll( ".deleteBtn");
-			if ( deleteCommentsBtnHolder && deleteCommentsBtnHolder.length > 0 ) {
-				for ( let item = 0; item < deleteCommentsBtnHolder.length; item++ ) {
-					let btn = deleteCommentsBtnHolder[item];
-					if ( btn == null ) { return false; }
-					btn.addEventListener( 'click', ( element ) => { onDeleteComments( element ); } )
-				}
-			}
-		}
 
 		function setClickPostListeners() {
 			const deletePostBtnHolder = document.querySelectorAll( ".deleteBtnPost" );
@@ -307,13 +378,6 @@
 			}
 		});
 
-		$(document).on("click", ".deleteCommentButton", function () {
-			let myComment = $(this).data('value');
-			let modal = document.querySelector('#exampleModal1');
-			if (modal){
-				modal.querySelector('.deleteBtn').setAttribute('data-value', myComment) ;
-			}
-		});
 
 		function onDeletePressed( action ) {
 			if ( action.target.getAttribute( 'data-value' ) ) {
