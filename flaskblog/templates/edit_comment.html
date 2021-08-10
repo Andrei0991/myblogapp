@@ -3,13 +3,28 @@
 {% block content %}
     <h2>Edit Comment</h2><br>
     <div class="container">
-        <form method="POST" action="/edit/{{ edit['idComment'] }}">
+        <!-- <form method="POST" action="/edit/{{ edit['idComment'] }}">
             <dl>
             <label class="labels">Edit comment <i class="fas fa-hand-point-down"></i></label>
             <div class="msg text-danger"><strong>{{ errors['context'] }}</strong></div>	
             <p><input name="context" type="text" value = "{{ edit['context'] }}" required></p>
             </dl>
             <p><input type="submit" class="btn btn-primary btn-sm editComment" value="Press to edit"></p>
-        </form>
+        </form> -->
+
+        <div class="form-group">
+            <dl>
+                <label class="labels">Edit comment <i class="fas fa-hand-point-down"></i></label>
+                <p><input name="context-message" type="text" value = "{{ data['context'] }}" required></p>
+                <input type="hidden" name="idComment" value="{{ data['idComment'] }}">
+                <textarea class="form-control" id="inputEditComment" name="context" rows="5"></textarea>
+                <strong><div class="text-danger text-small text-center editComment-message-holder"></div></strong>
+            </dl>
+            <p><button class="btn-sm btn-primary" onclick= "javascript:editComments( this );">Press to edit</button></p> -->
+            <!-- <p><input type="submit" class="btn btn-primary btn-sm editComment" value="Press to edit"></p> -->
+        </div>
+        <div class="editCommentMessage text-sm text-danger text-center alert-danger"></div>
+
     </div>    
 {% endblock %}
+       
