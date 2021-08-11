@@ -41,7 +41,7 @@
 							<br>
 							<br>
 							{% if comment['idUser'] == session['id']%}
-								<a href="/edit/{{ comment['idComment'] }}"><button type="submit" class="btn btn-primary btn-sm editBtn" data-value = "{{ comment['idComment'] }}">Edit Comment</button></a>
+								<a href="#"><button type="button" class="btn btn-primary btn-sm editBtn" data-value = "{{ comment['idComment'] }}">Edit Comment</button></a>
 							{% endif %}
 							{% if post['idUser'] == session['id'] %}						
 								<button type="button" class="btn btn-danger btn-sm deleteCommentButton" data-value = "{{ comment['idComment'] }}" data-toggle="modal" data-target="#exampleModal1">Delete Comment</button>
@@ -153,91 +153,26 @@
 
 
 	<script>
-
 		window.onload = () => {
 			setClickListeners();
 			setClickPostListeners();
-			
 		}
 		
+		let url = window.location.href
+		let split = url.split('/')
+		console.log(url)
+		console.log(split)
+		let page = split[split.length - 1]
+		console.log(page)
 		$(document).on("click", ".editBtn", function () {
 			let myEdit = $(this).data('value');
-			let myForm = document.querySelector(".form-control");
+			let myForm = document.querySelector("#inputEditComment");
 			if (myForm){
-				myForm.querySelector('.editBtn').setAttribute('data-value', myEdit) ;
+				$( this ).data( 'value', myEdit );
 			}
+			window.location.href = `/edit-comment/${myEdit}?page=${page}`;
 		});
 
-		function editComments(action){
-			let editComment = document.querySelector("#inputEditComment");
-			let editCommentsBtn = document.querySelector(".editBtn");
-			let editCommentHolder = document.querySelector(".editCommentMessage");
-			let editCommentError = document.querySelector( ".editComment-message-holder" );
-			let idComment = document.querySelector('input[name="idComment"]').value;
-			let commentContext = document.querySelector('input[name="context-message"]').value;
-
-			if ( action.target.getAttribute( 'data-value' ) ) {
-				let promise = new Promise( function( resolve, reject ) {
-						// set the server request
-						var xhttp = new XMLHttpRequest();
-							xhttp.onreadystatechange = function() {
-								if ( this.readyState == 4 && this.status == 200 ) {
-									// convert the response from base64 and json to obj
-									let response = JSON.parse( atob( this.responseText ) );
-									// return the server error 
-									console.log("RESPONSE::", response )
-									if( response['error'] > 0 ){
-										reject( { 'error':2, 'errors':response } );
-										return false;
-									}
-									resolve( response );
-								}
-							};
-							
-						xhttp.open( 'POST', `/edit/${action.target.getAttribute( 'data-value' )}`, true );
-						xhttp.send(JSON.stringify( { 'context':editComment.value, 'idComment':idComment } ));
-					
-					} );
-					
-
-					promise.then( ( data ) => {
-						// set the response to holder
-						let editCommentHolder = document.querySelector( '.editCommentMessage' );
-							if ( editCommentHolder ) {
-								editCommentHolder.innerHTML = data.message;
-							}
-						setTimeout( ()=> {
-							window.location.reload();
-						}, 1000 );
-					} ).catch( ( error ) => {
-						let editCommentHolder = document.querySelector( '.editCommentMessage' );
-						if ( editCommentHolder ) {
-							// check general error
-							if ( error['errors']['errors'] ) {
-								editCommentHolder.innerHTML = `Eroare: ${error['error']} <br> Erori: ${error['errors']['errors']}`;
-								return false;
-							}
-							// check validation errors
-							if ( error['errors']['fields'] ) {
-								// go through all errors
-								for ( const item in error['errors']['fields'] ) {
-									// set current value
-									let value = error['errors']['fields'][item];
-
-									if ( item == 'context' ) {
-										editCommentError.innerHTML = value;
-									}
-									if ( item == 'idComment' ) {
-										editCommentHolder.innerHTML = value;
-									}
-								}
-							}
-
-						}
-					} );
-			}
-
-		}
 
 		function setClickListeners() {
 			const deleteCommentsBtnHolder = document.querySelectorAll( ".deleteBtn");
@@ -346,7 +281,7 @@
 						}
 					setTimeout( ()=> {
 						window.location.reload();
-					}, 1000 );
+					}, 500 );
 				} ).catch( ( error ) => {
 					let messageHolder = document.querySelector( '.formMessage' );
 					if ( messageHolder ) {

@@ -1,6 +1,7 @@
 from flask import render_template, url_for, redirect, request, session, Blueprint, abort
 from flaskblog import db
 import re, math, base64, json
+from urllib.parse import urlparse
 
 postings = Blueprint('postings', __name__)
 
@@ -18,6 +19,7 @@ def checker( function ):
 @postings.route('/posts', defaults={'page': 1}, methods=['GET', 'POST'])
 @postings.route('/posts/page/<int:page>')
 def posts(page):
+	o = urlparse(request.base_url)
 	db.query("""SET session sql_mode='NO_ENGINE_SUBSTITUTION'""")
 	limit = 3
 	offset = page*limit - limit
@@ -57,7 +59,24 @@ def posts(page):
 			for comment in comments:
 				commentsAdded[comment['idPost']].append(comment)
 	return render_template('posts.html', post_details = post_details, username = session['username'], commentsAdded = commentsAdded, next = next, prev = prev, pages = pages)
+	
+@checker		
+@postings.route('/edit-comment/<int:idComment>', methods=['GET', 'POST'])
+def edit_comment(idComment):
+	data = {}
+	if not str( idComment ).isdigit():
+		return redirect( url_for( 'postings.posts' ) )
+	if not 'loggedin' in session:
+		return redirect( url_for( 'users.login' ) )
+	context = db.select( """
+							SELECT context FROM comments WHERE idComment='{0}' AND statusComment=1
+						 """.format( idComment ) )
+	if not context or not context['context']:
+		return redirect( url_for( 'postings.posts' ) )
+	data['context']   = context['context']
+	data['idComment'] = idComment
 
+	return render_template( 'edit_comment.html', data=data )
 
 @checker
 @postings.route('/delete/<id_post>', methods=['GET', 'POST'])
@@ -67,7 +86,6 @@ def delete(id_post):
 
 	db.delete(f'DELETE FROM posts WHERE idPost = {id_post} AND statusPost = 1')
 	return base64.b64encode( json.dumps( { "error":0, "message":"Datele postului au fost modificate cu succes !" } ).encode('utf8') )
-
 
 @checker
 @postings.route('/update/<id_post>', methods=['GET', 'POST'])
@@ -86,7 +104,6 @@ def update(id_post):
 	post = db.select( "SELECT * FROM posts WHERE idPost = '{0}'".format(id_post) )
 	return render_template( 'update.html', post = post )
 	 
-
 @checker
 @postings.route('/add-comment', methods = [ 'POST' ] )
 def comments():
@@ -120,8 +137,6 @@ def comments():
 	db.insert("INSERT INTO comments (idPost, idUser, context) VALUES ('{0}', '{1}', '{2}')".format( values['idPost'], session['id'], values['context'] ))
 	return base64.b64encode( json.dumps( { "error":0, "message":"Datele au fost salvate cu success." } ).encode('utf8') )
 
-
-
 @checker
 @postings.route('/deleteComments/<id_post>', methods=['GET', 'POST'])
 def deleteComments( id_post ):
@@ -131,65 +146,3 @@ def deleteComments( id_post ):
 	db.delete(f'DELETE FROM comments WHERE idComment = {id_post} AND statusComment = 1')
 	return base64.b64encode( json.dumps( { "error":0, "message":"Datele au fost modificate cu success!" } ).encode('utf8') )
 		
-	
-@checker
-@postings.route('/edit/<id_comment>', methods = ['GET', 'POST'])
-def edit(id_comment):
-	
-	errors = {}
-	values = {}
-	data = json.loads( request.get_data().decode('utf-8') )
-	print(type(data))
-	print(data)
-	
-	if not data:
-		return base64.b64encode( json.dumps( { "error":2, "errors": "O eroare a avut loc in zona postarilor trimise." } ) )
-	
-	if id_comment is None or not isinstance( id_comment, str ): 
-		return base64.b64encode( json.dumps( { "error": 2, "message": "O eroare a avut loc in zona de date necesare!" } ).encode('utf8') )
-	
-	if 'context' in data:
-		db.select("SELECT * FROM comments WHERE idComment = '{0}'".format(id_comment,))
-		if re.match( '^[a-zA-Z0-9\s@#?!$*%.,()\[\]\{\}" *"]+$', data['context'] ):
-			values['context'] = data['context'].strip()
-		else:
-			errors['context'] = "Campul 'Edit Comments' contine caractere interzise."
-	if data['context'] == "":
-		errors['context'] = "Campul 'Edit Comments' nu a fost completat. Va rugam sa introduceti date in acest camp."
-	
-	if 'idComment' in data:
-		if re.match( '^[0-9]+$', data['idComment'] ):
-			values['idComment'] = data['idComment']
-		else:
-			errors['idComment'] = "O eroare a avut loc in zona datelor trimise."
-	else:
-		errors['idComment'] = "O eroare a avut loc in zona datelor trimise."
-	if len( errors.keys() ) > 0:
-		return base64.b64encode( json.dumps( { "error":2, "fields" : errors } ).encode('utf8') )
-
-	db.update("UPDATE comments SET context = '{0}' WHERE idComment = '{1}' AND statusComment = 1".format(context, id_comment))
-	return base64.b64encode( json.dumps( { "error":0, "message":"Datele au fost modificate cu success!" } ).encode('utf8') )
-	
-	
-	# if request.method == "POST":
-	# 	context = request.form['context']
-	# 	if not id_comment or not id_comment.isdigit():
-	# 			return abort(404)
-	# 	user = db.select("SELECT * FROM comments WHERE idComment = '{0}'".format(id_comment,))
-	# 	if user and user['idUser'] is not None:
-	# 		if session['id'] != user['idUser']:
-	# 			return abort(404)
-	# 	if 'context' in request.form:
-	# 		if re.match( '^[a-zA-Z0-9\+\:\@\#\$\%\&\*\{\}\]\/\.\-\_\,\(\)\?\!\"\s]+$', request.form['context'] ):
-	# 			values['context'] = request.form['context']
-	# 		else:
-	# 			errors['context'] = "Campul 'Context' contine caractere interzise."
-	# 	else:
-	# 		errors['context'] = "Context OK"
-	# 	if len(errors) == 0:				
-	# 		db.update("UPDATE comments SET context = '{0}' WHERE idComment = '{1}' AND statusComment = 1".format(context, id_comment))
-	# 		return redirect(url_for('postings.posts'))
-	# edit = db.select("SELECT * FROM comments WHERE idComment = '{0}'".format(id_comment,))
-	# return render_template('edit_comment.html', edit = edit, errors = errors)
-	
-

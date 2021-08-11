@@ -15,8 +15,10 @@ bcrypt = Bcrypt(app)
 
 from flaskblog.users.routes import users
 from flaskblog.posts.routes import postings
+from flaskblog.posts.posts_ajax import posts_ajax
 from flaskblog.main.routes import main
 
 app.register_blueprint(users)
 app.register_blueprint(postings)
 app.register_blueprint(main)
+app.register_blueprint(posts_ajax, url_prefix="/posts-ajax")

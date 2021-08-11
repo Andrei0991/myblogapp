@@ -3,28 +3,98 @@
 {% block content %}
     <h2>Edit Comment</h2><br>
     <div class="container">
-        <!-- <form method="POST" action="/edit/{{ edit['idComment'] }}">
-            <dl>
-            <label class="labels">Edit comment <i class="fas fa-hand-point-down"></i></label>
-            <div class="msg text-danger"><strong>{{ errors['context'] }}</strong></div>	
-            <p><input name="context" type="text" value = "{{ edit['context'] }}" required></p>
-            </dl>
-            <p><input type="submit" class="btn btn-primary btn-sm editComment" value="Press to edit"></p>
-        </form> -->
 
         <div class="form-group">
             <dl>
-                <label class="labels">Edit comment <i class="fas fa-hand-point-down"></i></label>
-                <p><input name="context-message" type="text" value = "{{ data['context'] }}" required></p>
+                <label class="labels">Old comment context <i class="fas fa-hand-point-down"></i></label>
+                <p><input class="form-control" name="context-message" type="text" value = "{{ data['context'] }}" required></p>
                 <input type="hidden" name="idComment" value="{{ data['idComment'] }}">
+                <label class="labels">Edit comment context <i class="fas fa-hand-point-down"></i></label>
                 <textarea class="form-control" id="inputEditComment" name="context" rows="5"></textarea>
                 <strong><div class="text-danger text-small text-center editComment-message-holder"></div></strong>
             </dl>
-            <p><button class="btn-sm btn-primary" onclick= "javascript:editComments( this );">Press to edit</button></p> -->
-            <!-- <p><input type="submit" class="btn btn-primary btn-sm editComment" value="Press to edit"></p> -->
+            <p><button class="btn-sm btn-primary" onclick="javascript:editComments(this);">Press to edit</button></p>
         </div>
         <div class="editCommentMessage text-sm text-danger text-center alert-danger"></div>
 
     </div>    
+
+    <script>
+
+        function editComments(action){
+			let editComment = document.querySelector("#inputEditComment");
+			let editCommentHolder = document.querySelector(".editCommentMessage");
+			let editCommentError = document.querySelector( ".editComment-message-holder" );
+			let idComment = document.querySelector('input[name="idComment"]').value;
+			let commentContext = document.querySelector('input[name="context-message"]').value;
+            
+            
+			if ( idComment ) {
+                
+				let promise = new Promise( function( resolve, reject ) {
+						// set the server request
+						var xhttp = new XMLHttpRequest();
+                        xhttp.onreadystatechange = function() {
+                            if ( this.readyState == 4 && this.status == 200 ) {
+                                // convert the response from base64 and json to obj
+                                let response = JSON.parse( atob( this.responseText ) );
+                                // return the server error 
+                                console.log("RESPONSE::", response )
+                                if( response['error'] > 0 ){
+                                    reject( { 'error':2, 'errors':response } );
+                                    return false;
+                                }
+                                resolve( response );
+                            }
+                        };
+                        
+						xhttp.open( 'POST', `${base_url}posts-ajax/edit/${idComment}`, true );
+						xhttp.send(JSON.stringify( { 'context':editComment.value, 'idComment':idComment } ));
+					} );
+					
+                    
+                    console.log(editComment)
+					promise.then( ( data ) => {
+                        console.log(data)
+						// set the response to holder
+						let editCommentHolder = document.querySelector( '.editCommentMessage' );
+							if ( editCommentHolder ) {
+								editCommentHolder.innerHTML = data.message;
+							}
+						setTimeout( ()=> {
+                            let params = (new URL(document.location)).searchParams;
+                            let page = params.get("page");
+							window.location.href = `/posts/page/${page}`;
+						}, 500 );
+					} ).catch( ( error ) => {
+						let editCommentHolder = document.querySelector( '.editCommentMessage' );
+						if ( editCommentHolder ) {
+							// check general error
+							if ( error['errors']['errors'] ) {
+								editCommentHolder.innerHTML = `Eroare: ${error['error']} <br> Erori: ${error['errors']['errors']}`;
+								return false;
+							}
+							// check validation errors
+							if ( error['errors']['fields'] ) {
+								// go through all errors
+								for ( const item in error['errors']['fields'] ) {
+									// set current value
+									let value = error['errors']['fields'][item];
+
+									if ( item == 'context' ) {
+										editCommentError.innerHTML = value;
+									}
+									if ( item == 'idComment' ) {
+										editCommentHolder.innerHTML = value;
+									}
+								}
+							}
+
+						}
+					} );
+			}
+
+		}
+    </script>
 {% endblock %}
        
