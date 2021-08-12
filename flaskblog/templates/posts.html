@@ -54,11 +54,11 @@
 				</div>
 			</article>
 			<br>
-			<button data-target="#myModal/add-comment" 
+			<button data-target="#myModal{{ post.idPost }}/add-comment" 
 				class="btn btn-sm btn-primary" 
 				data-toggle="modal">Add a comment
 			</button>
-			<div id="myModal/add-comment" class="modal fade">
+			<div id="myModal{{ post.idPost }}/add-comment" class="modal fade">
 				<div class="modal-dialog">
 					<div class="modal-content">
 						<div class="modal-header">
@@ -66,7 +66,6 @@
 							<button type="button" class="close  d-inline-block" data-dismiss="modal">&times;</button>
 						</div>
 						<div class="modal-body">
-							<input type="hidden" name="idPost" value="{{ post.idPost }}">
 
 							<div class="form-group">
 								<label for="inputName">User: </label>
@@ -75,14 +74,14 @@
 
 							<div class="form-group">
 								<label for="inputComment">Comments</label>
-								<textarea class="form-control" id="inputComment" name="context" rows="5"></textarea>
+								<textarea class="form-control" id="inputComment{{ post.idPost }}" name="context" rows="5"></textarea>
 								<strong><div class="text-danger text-small text-center comment-message-holder"></div></strong>
 							</div>
 							<div class="formMessage text-sm text-danger text-center alert-danger"></div>
 
 							<div class="modal-footer">
 								<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-								<button class="btn btn-primary" onclick= "javascript:addComment( this );">Send</button>
+								<button class="btn btn-primary" data-idPost="{{ post.idPost }}" onclick= "javascript:addComment( this );">Send</button>
 							</div>
 						</div>
 					</div>
@@ -239,10 +238,10 @@
 		}	
 
 		function addComment(action){
-			
-			let comment = document.querySelector("#inputComment");
+
+			let idPost = action.getAttribute('data-idPost');
+			let comment = document.querySelector(`#inputComment${idPost}`);
 			let messageHolder = document.querySelector(".formMessage");
-			let idPost = document.querySelector('input[name="idPost"]').value;
 			let commentError = document.querySelector( ".comment-message-holder" );
 
 			if ( !comment ) {
@@ -266,7 +265,7 @@
 								resolve( response );
 							}
 						};
-						
+						console.log(idPost)
 					xhttp.open( 'POST', `/add-comment`, true );
 					xhttp.send( JSON.stringify( { 'context':comment.value, 'idPost':idPost } ) );
 				

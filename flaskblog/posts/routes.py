@@ -79,7 +79,7 @@ def edit_comment(idComment):
 	return render_template( 'edit_comment.html', data=data )
 
 @checker
-@postings.route('/delete/<id_post>', methods=['GET', 'POST'])
+@postings.route('/delete/<id_post>', methods=['POST'])
 def delete(id_post):
 	if id_post is None or not isinstance( id_post, str ): 
 		return base64.b64encode( json.dumps( { "error": 2, "message": "A avut loc o eroare, va rugam incercati din nou !" } ).encode('utf8') )
@@ -90,6 +90,8 @@ def delete(id_post):
 @checker
 @postings.route('/update/<id_post>', methods=['GET', 'POST'])
 def update(id_post):
+	errors = {}
+	values = {}
 	if request.method == "POST":
 		title = request.form['title']
 		content = request.form['content']
@@ -99,10 +101,23 @@ def update(id_post):
 		if user and user['idUser'] is not None:
 			if session['id'] != user['idUser']:
 				return abort(404)
-		db.update( "UPDATE posts INNER JOIN users ON posts.idUser = users.idUser SET title = '{0}', content = '{1}' WHERE idPost = '{2}' AND statusPost = 1".format(title, content, id_post) )
-		return redirect( url_for('postings.posts') )
+		if re.match(r'^[a-zA-Z0-9\+\:\@\#\$\%\&\*\{\}\]\/\.\-\_\,\(\)\?\!\"\s]+$', request.form['title']):
+				values['title'] = request.form['title']
+		elif len(title) == 0:
+			errors['title'] = "Va rugam completati campul 'Title'."
+		else:
+			errors['title'] = "Campul 'Title' contine caractere interzise."
+		if re.match(r'^[a-zA-Z0-9\+\:\@\#\$\%\&\*\{\}\]\/\.\-\_\,\(\)\?\!\"\s]+$', request.form['content']):
+			values['content'] = request.form['content']
+		elif len(content) == 0:
+			errors['content'] = "Va rugam completati campul 'Content'."
+		else:
+			errors['content'] = "Campul 'Content' contine caractere interzise."
+		if len(errors) == 0:		
+			db.update( "UPDATE posts INNER JOIN users ON posts.idUser = users.idUser SET title = '{0}', content = '{1}' WHERE idPost = '{2}' AND statusPost = 1".format(values['title'], values['content'], id_post) )
+			return redirect( url_for('postings.posts') )
 	post = db.select( "SELECT * FROM posts WHERE idPost = '{0}'".format(id_post) )
-	return render_template( 'update.html', post = post )
+	return render_template( 'update.html', post = post, errors = errors)
 	 
 @checker
 @postings.route('/add-comment', methods = [ 'POST' ] )
@@ -138,7 +153,7 @@ def comments():
 	return base64.b64encode( json.dumps( { "error":0, "message":"Datele au fost salvate cu success." } ).encode('utf8') )
 
 @checker
-@postings.route('/deleteComments/<id_post>', methods=['GET', 'POST'])
+@postings.route('/deleteComments/<id_post>', methods=['POST'])
 def deleteComments( id_post ):
 	if id_post is None or not isinstance( id_post, str ): 
 		return base64.b64encode( json.dumps( { "error": 2, "message": "O eroare a avut loc in zona de date necesare!" } ).encode('utf8') )

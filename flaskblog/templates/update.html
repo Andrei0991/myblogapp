@@ -6,9 +6,11 @@
         <form method="POST" action="/update/{{ post['idPost'] }}">
             <dl>
             <label class="labels">Update the title <i class="fas fa-hand-point-down"></i></label>
-            <p><input class="form-control" name="title" type="text" value = "{{ post.title }}" required></p>
+            <strong><div class="msg text-danger">{{ errors['title'] }}</div></strong>
+            <p><input class="form-control" name="title" type="text" value = "{{ post.title }}" ></p>
             <label class="labels">Update the content <i class="fas fa-hand-point-down"></i></label>
-            <p><input class="form-control" name="content" type="text" value = "{{ post.content }}" required></p>
+            <strong><div class="msg text-danger">{{ errors['content'] }}</div></strong>
+            <p><input class="form-control" name="content" type="text" value = "{{ post.content }}" ></p>
             </dl>
             <p>
             <input type="submit" class="btn btn-primary btn-sm" value="Press to UPDATE">
