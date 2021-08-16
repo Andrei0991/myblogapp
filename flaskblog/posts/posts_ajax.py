@@ -31,7 +31,7 @@ def edit(id_comment):
 	
 	if 'context' in data:
 		db.select("SELECT * FROM comments WHERE idComment = '{0}'".format(id_comment,))
-		if re.match( '^[a-zA-Z0-9\s@#?!$*%.,()\[\]\{\}" *"-]+$', data['context'] ):
+		if re.match( '^[a-zA-Z0-9\s@#?!$*%.,()\[\]\{\}" *"-+]+$', data['context'] ):
 			values['context'] = data['context'].strip()
 		else:
 			errors['context'] = "Campul 'New comment context' contine caractere interzise."
