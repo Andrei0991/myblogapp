@@ -54,7 +54,6 @@
 					
                     
 					promise.then( ( data ) => {
-                        console.log(data)
 						// set the response to holder
 						let editCommentHolder = document.querySelector( '.editCommentMessage' );
 							if ( editCommentHolder ) {
@@ -62,8 +61,12 @@
 							}
 						setTimeout( ()=> {
                             let params = (new URL(document.location)).searchParams;
-                            let page = params.get("page");
-							window.location.href = `/posts/page/${page}`;
+                            let pageNumber = params.get("page");
+							if (params.get("page") == "posts") {
+								window.location.href = `/posts`;
+							} else {
+								window.location.href = `/posts/page/${pageNumber}`;
+							}
 						}, 500 );
 					} ).catch( ( error ) => {
 						let editCommentHolder = document.querySelector( '.editCommentMessage' );

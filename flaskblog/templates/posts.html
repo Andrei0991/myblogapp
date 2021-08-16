@@ -155,21 +155,23 @@
 		window.onload = () => {
 			setClickListeners();
 			setClickPostListeners();
+			let pageNumber = "{{ pageNumber }}"; 
+			console.log(pageNumber)
 		}
 		
 		let url = window.location.href
 		let split = url.split('/')
 		console.log(url)
 		console.log(split)
-		let page = split[split.length - 1]
-		console.log(page)
+		pageNumber = split[split.length - 1]
+		console.log(pageNumber)
 		$(document).on("click", ".editBtn", function () {
 			let myEdit = $(this).data('value');
 			let myForm = document.querySelector("#inputEditComment");
 			if (myForm){
 				$( this ).data( 'value', myEdit );
 			}
-			window.location.href = `/edit-comment/${myEdit}?page=${page}`;
+			window.location.href = `/edit-comment/${myEdit}?page=${pageNumber}`;
 		});
 
 

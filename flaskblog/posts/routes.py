@@ -16,7 +16,7 @@ def checker( function ):
 
 
 @checker
-@postings.route('/posts', defaults={'page': 1}, methods=['GET', 'POST'])
+@postings.route('/posts', defaults = {'page': 1}, methods=['GET', 'POST'])
 @postings.route('/posts/page/<int:page>')
 def posts(page):
 	o = urlparse(request.base_url)
@@ -26,7 +26,6 @@ def posts(page):
 	next = page+1
 	prev = page-1
 	post_IDS = []
-
 	count = db.select(""" SELECT count(*) AS count FROM posts """)
 	count = count['count']
 	pages = math.ceil(count / limit)
@@ -58,7 +57,7 @@ def posts(page):
 		if comments:
 			for comment in comments:
 				commentsAdded[comment['idPost']].append(comment)
-	return render_template('posts.html', post_details = post_details, username = session['username'], commentsAdded = commentsAdded, next = next, prev = prev, pages = pages)
+	return render_template('posts.html', post_details = post_details, username = session['username'], commentsAdded = commentsAdded, next = next, prev = prev, pages = pages, pageNumber = page )
 	
 @checker		
 @postings.route('/edit-comment/<int:idComment>', methods=['GET', 'POST'])
