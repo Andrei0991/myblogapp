@@ -13,7 +13,7 @@
                 <textarea class="form-control" id="inputEditComment" name="context" rows="5"></textarea>
                 <strong><div class="text-danger text-small text-center editComment-message-holder"></div></strong>
             </dl>
-            <p><button class="btn-sm btn-primary" onclick="javascript:editComments(this);">Press to edit</button></p>
+            <p><button class="btn-sm btn-primary" onclick="javascript:editComments();">Press to edit</button></p>
         </div>
         <div class="editCommentMessage text-sm text-danger text-center alert-danger"></div>
 
@@ -21,7 +21,7 @@
 
     <script>
 
-        function editComments(action){
+        function editComments(){
 			let editComment = document.querySelector("#inputEditComment");
 			let editCommentHolder = document.querySelector(".editCommentMessage");
 			let editCommentError = document.querySelector( ".editComment-message-holder" );
