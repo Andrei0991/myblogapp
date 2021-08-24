@@ -267,7 +267,6 @@
 								resolve( response );
 							}
 						};
-						console.log(idPost)
 					xhttp.open( 'POST', `/add-comment`, true );
 					xhttp.send( JSON.stringify( { 'context':comment.value, 'idPost':idPost } ) );
 				
